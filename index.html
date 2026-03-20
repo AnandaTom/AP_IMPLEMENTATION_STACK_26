@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
-<title>HubSpot Omnichannel — Backlog Client</title>
+<title>Artistic Palace — Backlog Implémentation HubSpot CRM</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -16,10 +16,17 @@
     padding: 40px 24px;
     min-height: 100vh;
   }
-  .container { max-width: 820px; margin: 0 auto; }
+  .container { max-width: 860px; margin: 0 auto; }
+
+  /* Logo */
+  .logo-row {
+    display: flex; align-items: center; gap: 14px; margin-bottom: 24px;
+  }
+  .logo-row svg { flex-shrink: 0; }
+  .logo-text { font-size: 13px; color: #475569; font-family: monospace; letter-spacing: .08em; }
 
   /* Header */
-  .header { margin-bottom: 40px; }
+  .header { margin-bottom: 32px; }
   .header-meta {
     display: flex; align-items: center; gap: 10px; margin-bottom: 6px;
   }
@@ -31,8 +38,14 @@
     font-size: 11px; color: #475569; letter-spacing: .15em;
     text-transform: uppercase; font-family: monospace;
   }
-  h1 { font-size: 28px; font-weight: 400; letter-spacing: -.02em; margin-bottom: 6px; }
-  .header-sub { color: #475569; font-size: 14px; }
+  h1 { font-size: 26px; font-weight: 400; letter-spacing: -.02em; margin-bottom: 6px; }
+  .header-sub { color: #475569; font-size: 14px; margin-bottom: 16px; }
+
+  /* Legend */
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 28px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+  .legend-label { font-size: 11px; color: #64748b; font-family: monospace; }
 
   /* Filters */
   .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 32px; }
@@ -42,7 +55,6 @@
     cursor: pointer; transition: all .15s; font-family: monospace;
   }
   .filter-btn:hover { border-color: #334155; color: #94a3b8; }
-  .filter-btn.active { }
 
   /* Sprint block */
   .sprint { margin-bottom: 36px; }
@@ -58,6 +70,19 @@
   .sprint-title { font-size: 16px; font-weight: 400; }
   .sprint-count { font-size: 11px; color: #334155; font-family: monospace; margin-left: auto; }
   .sprint-sub { color: #475569; font-size: 12px; margin-bottom: 14px; font-style: italic; }
+
+  /* Completed phase */
+  .phase-done {
+    background: #111827; border: 1px solid #1e293b; border-radius: 8px;
+    padding: 14px 16px; margin-bottom: 10px; opacity: .45;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .phase-done-check {
+    width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .phase-done-text { font-size: 14px; text-decoration: line-through; color: #475569; }
+  .phase-done-date { font-size: 11px; color: #334155; font-family: monospace; margin-left: auto; }
 
   /* Task card */
   .task {
@@ -92,6 +117,10 @@
     text-transform: uppercase; padding: 2px 8px; border-radius: 4px;
     white-space: nowrap;
   }
+  .badge-crm { background: #f9731622; color: #f97316; border: 1px solid #f9731644; }
+  .badge-omni { background: #a855f722; color: #a855f7; border: 1px solid #a855f744; }
+  .badge-planning { background: #22c55e22; color: #22c55e; border: 1px solid #22c55e44; }
+  .badge-inventaire { background: #ef444422; color: #ef4444; border: 1px solid #ef444444; }
   .chevron {
     color: #475569; font-size: 11px; flex-shrink: 0;
     margin-top: 4px; transition: transform .2s; user-select: none;
@@ -136,529 +165,909 @@
     align-items: center; flex-wrap: wrap; gap: 8px;
   }
   .footer-brand { font-size: 11px; color: #334155; font-family: monospace; }
-  .footer-dots { display: flex; gap: 16px; }
+  .footer-dots { display: flex; gap: 16px; flex-wrap: wrap; }
   .footer-dot-item { display: flex; align-items: center; gap: 6px; }
   .footer-dot { width: 6px; height: 6px; border-radius: 50%; }
   .footer-dot-label { font-size: 10px; color: #334155; font-family: monospace; }
+
+  /* Status badges */
+  .status {
+    font-size: 9px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    padding: 2px 6px; border-radius: 3px; font-family: monospace;
+  }
+  .status-done { background: #22c55e22; color: #22c55e; }
+  .status-wip { background: #f9731622; color: #f97316; }
+  .status-wait { background: #ef444422; color: #ef4444; }
 </style>
 </head>
 <body>
 <div class="container">
 
+  <!-- LOGO -->
+  <div class="logo-row">
+    <svg width="48" height="48" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <g fill="white">
+        <!-- Left hand -->
+        <path d="M30 120 C30 120 25 115 25 108 L25 90 C25 85 28 82 32 82 L60 82 C60 82 65 82 68 85 L100 110 L68 130 C65 132 60 132 55 130 Z"/>
+        <!-- Right hand -->
+        <path d="M170 120 C170 120 175 115 175 108 L175 90 C175 85 172 82 168 82 L140 82 C140 82 135 82 132 85 L100 110 L132 130 C135 132 140 132 145 130 Z"/>
+        <!-- Fingers left -->
+        <rect x="22" y="118" width="40" height="6" rx="3" transform="rotate(15 22 118)"/>
+        <rect x="20" y="126" width="38" height="6" rx="3" transform="rotate(20 20 126)"/>
+        <rect x="20" y="134" width="35" height="6" rx="3" transform="rotate(25 20 134)"/>
+        <rect x="22" y="142" width="28" height="6" rx="3" transform="rotate(30 22 142)"/>
+        <!-- Fingers right -->
+        <rect x="138" y="118" width="40" height="6" rx="3" transform="rotate(-15 178 118)"/>
+        <rect x="142" y="126" width="38" height="6" rx="3" transform="rotate(-20 180 126)"/>
+        <rect x="145" y="134" width="35" height="6" rx="3" transform="rotate(-25 180 134)"/>
+        <rect x="150" y="142" width="28" height="6" rx="3" transform="rotate(-30 178 142)"/>
+        <!-- Circuit nodes left -->
+        <circle cx="45" cy="58" r="5"/><line x1="45" y1="63" x2="45" y2="78" stroke="white" stroke-width="3"/>
+        <circle cx="30" cy="52" r="4"/><line x1="33" y1="55" x2="40" y2="72" stroke="white" stroke-width="2.5"/>
+        <circle cx="60" cy="52" r="4"/><line x1="57" y1="55" x2="50" y2="72" stroke="white" stroke-width="2.5"/>
+        <circle cx="20" cy="62" r="3"/><line x1="22" y1="64" x2="35" y2="76" stroke="white" stroke-width="2"/>
+        <circle cx="70" cy="62" r="3"/><line x1="68" y1="64" x2="55" y2="76" stroke="white" stroke-width="2"/>
+        <!-- Circuit nodes right -->
+        <circle cx="155" cy="58" r="5"/><line x1="155" y1="63" x2="155" y2="78" stroke="white" stroke-width="3"/>
+        <circle cx="140" cy="52" r="4"/><line x1="143" y1="55" x2="150" y2="72" stroke="white" stroke-width="2.5"/>
+        <circle cx="170" cy="52" r="4"/><line x1="167" y1="55" x2="160" y2="72" stroke="white" stroke-width="2.5"/>
+        <circle cx="130" cy="62" r="3"/><line x1="132" y1="64" x2="145" y2="76" stroke="white" stroke-width="2"/>
+        <circle cx="180" cy="62" r="3"/><line x1="178" y1="64" x2="165" y2="76" stroke="white" stroke-width="2"/>
+      </g>
+      <text x="100" y="185" fill="white" font-family="Arial, sans-serif" font-weight="700" font-size="28" text-anchor="middle">Jinxa</text>
+    </svg>
+    <div>
+      <div style="font-size:14px;font-weight:500;color:#f1f5f9">Jinxa EURL</div>
+      <div class="logo-text">Consulting Data / CRM / Automatisation</div>
+    </div>
+  </div>
+
+  <!-- HEADER -->
   <div class="header">
     <div class="header-meta">
       <div class="dot"></div>
-      <span>Projet actif · Mise en place omnicanale</span>
+      <span>Projet actif · Artistic Palace · Février 2026</span>
     </div>
-    <h1>HubSpot Omnichannel — Backlog Client</h1>
-    <p class="header-sub">16 tâches · 4 sprints · Email + WhatsApp + Aircall</p>
+    <h1>HubSpot CRM — Backlog Implémentation</h1>
+    <p class="header-sub">Studio de Musique — 15 espaces + 1 espace événementiel · 10 phases · ~30 tâches</p>
+
+    <!-- Legend -->
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div><span class="legend-label">CRM</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div><span class="legend-label">Omnicanal</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div><span class="legend-label">Planning Op</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div><span class="legend-label">Inventaire</span></div>
+    </div>
   </div>
 
+  <!-- FILTERS -->
   <div class="filters">
     <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">Tous</button>
+    <button class="filter-btn" data-filter="done" onclick="setFilter('done', this)">Réalisé</button>
     <button class="filter-btn" data-filter="sprint-1" onclick="setFilter('sprint-1', this)">Sprint 1</button>
     <button class="filter-btn" data-filter="sprint-2" onclick="setFilter('sprint-2', this)">Sprint 2</button>
     <button class="filter-btn" data-filter="sprint-3" onclick="setFilter('sprint-3', this)">Sprint 3</button>
     <button class="filter-btn" data-filter="sprint-4" onclick="setFilter('sprint-4', this)">Sprint 4</button>
-    <button class="filter-btn" data-filter="futur" onclick="setFilter('futur', this)">Futur scope</button>
+    <button class="filter-btn" data-filter="sprint-5" onclick="setFilter('sprint-5', this)">Sprint 5</button>
+    <button class="filter-btn" data-filter="sprint-6" onclick="setFilter('sprint-6', this)">Sprint 6</button>
+    <button class="filter-btn" data-filter="futur" onclick="setFilter('futur', this)">Futur</button>
   </div>
 
-  <!-- SPRINT 1 — Email -->
+  <!-- ═══════════════════ PHASES TERMINÉES ═══════════════════ -->
+  <div class="sprint" data-sprint="done">
+    <div class="sprint-header">
+      <span class="sprint-label" style="color:#334155">Phases terminées</span>
+      <span class="sprint-title" style="color:#475569">Audit, Sélection CRM &amp; Cadrage initial</span>
+    </div>
+
+    <div class="phase-done">
+      <div class="phase-done-check" style="background:#f97316"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <span class="phase-done-text">Phase 1 — Audit et synthèse stratégique</span>
+      <span class="phase-done-date">Fév. 2026 · Terminé</span>
+    </div>
+    <div class="phase-done">
+      <div class="phase-done-check" style="background:#f97316"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <span class="phase-done-text">Phase 2 — Sélection de la solution CRM (HubSpot retenu)</span>
+      <span class="phase-done-date">Fév. 2026 · Terminé</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SPRINT 1 — Cadrage & Besoins ═══════════════════ -->
   <div class="sprint" data-sprint="sprint-1">
     <div class="sprint-header">
-      <span class="sprint-label" style="color:#a855f7">Sprint 1</span>
-      <span class="sprint-title">Connexion Email</span>
-      <span class="sprint-count">4 tâches</span>
+      <span class="sprint-label" style="color:#f97316">Sprint 1</span>
+      <span class="sprint-title">Cadrage &amp; Expression des besoins</span>
+      <span class="sprint-count">5 tâches</span>
     </div>
-    <p class="sprint-sub">Connecter et configurer la boîte email d'équipe dans HubSpot</p>
+    <p class="sprint-sub">Phases 3 &amp; 4 — Mars 2026 · Finaliser le cadrage, le cahier des charges et la priorisation</p>
 
-    <div class="task" style="border-left:3px solid #a855f7">
+    <div class="task" style="border-left:3px solid #f97316">
       <div class="task-header" onclick="toggleTask(this)">
-        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#a855f7')">
-          <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#f97316')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <div class="task-meta">
           <div class="task-id-row">
             <span class="task-id">S1-1</span>
-            <span class="task-title">Connecter la boîte email d'équipe à HubSpot</span>
+            <span class="task-title">Finaliser la matrice de priorisation (impact vs effort)</span>
           </div>
-          <span class="badge" style="background:#a855f722;color:#a855f7;border:1px solid #a855f744">HubSpot — Canaux</span>
+          <span class="badge badge-crm">CRM — Cadrage</span>
         </div>
         <span class="chevron">▼</span>
       </div>
       <div class="task-detail">
-        <p class="task-desc">Aller dans Paramètres > Boîte de réception et centre de support > Canaux. Connecter un canal Email d'équipe via Google, Microsoft 365 ou IMAP. Authentifier et autoriser l'accès à la boîte partagée.</p>
+        <p class="task-desc">Classer l'ensemble des chantiers identifiés lors de l'audit selon leur impact business et leur effort de mise en œuvre. Définir les quick wins et les chantiers structurants.</p>
         <div class="tests-block">
           <div class="tests-label">✓ Tests d'acceptance</div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">L'email apparaît comme canal connecté dans les paramètres HubSpot</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Envoyer un email test → il apparaît dans la boîte de réception partagée</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Répondre depuis HubSpot → le destinataire reçoit l'email correctement</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Matrice 2×2 produite avec tous les chantiers positionnés</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Quick wins identifiés et validés par la direction</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Ordre de priorité acté pour les sprints suivants</span></div>
         </div>
       </div>
     </div>
 
-    <div class="task" style="border-left:3px solid #a855f7">
+    <div class="task" style="border-left:3px solid #f97316">
       <div class="task-header" onclick="toggleTask(this)">
-        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#a855f7')">
-          <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#f97316')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <div class="task-meta">
           <div class="task-id-row">
             <span class="task-id">S1-2</span>
-            <span class="task-title">Configurer les règles de routage et d'attribution</span>
+            <span class="task-title">Rédiger le cahier des charges fonctionnel et technique</span>
           </div>
-          <span class="badge" style="background:#a855f722;color:#a855f7;border:1px solid #a855f744">HubSpot — Canaux</span>
+          <span class="badge badge-crm">CRM — Besoins</span>
         </div>
         <span class="chevron">▼</span>
       </div>
       <div class="task-detail">
-        <p class="task-desc">Définir les règles d'attribution automatique des conversations email : round-robin entre agents, attribution par propriétaire du contact, ou file d'attente manuelle. Configurer les horaires de disponibilité de l'équipe.</p>
+        <p class="task-desc">Formaliser l'ensemble des besoins fonctionnels et techniques identifiés lors des ateliers métier : gestion des réservations, suivi commercial, facturation, espace événementiel, planning opérationnel. Inclure les règles de gestion, les parcours utilisateurs et les contraintes techniques.</p>
         <div class="tests-block">
           <div class="tests-label">✓ Tests d'acceptance</div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Email entrant → assigné automatiquement à un agent selon la règle définie</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Email d'un contact existant → assigné au propriétaire du contact</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Hors horaires → message d'absence automatique envoyé</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Document validé par Pierre Guimard (CEO) et les référents métier</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Chaque besoin a un niveau de priorité (must/should/could)</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Aucune ambiguïté sur les parcours utilisateurs décrits</span></div>
         </div>
       </div>
     </div>
 
-    <div class="task" style="border-left:3px solid #a855f7">
+    <div class="task" style="border-left:3px solid #f97316">
       <div class="task-header" onclick="toggleTask(this)">
-        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#a855f7')">
-          <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#f97316')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <div class="task-meta">
           <div class="task-id-row">
             <span class="task-id">S1-3</span>
-            <span class="task-title">Paramétrer les signatures et templates email</span>
+            <span class="task-title">Créer la matrice des règles de gestion par espace</span>
           </div>
-          <span class="badge" style="background:#a855f722;color:#a855f7;border:1px solid #a855f744">HubSpot — Email</span>
+          <span class="badge badge-planning">Planning Op — Espaces</span>
         </div>
         <span class="chevron">▼</span>
       </div>
       <div class="task-detail">
-        <p class="task-desc">Créer une signature email professionnelle unifiée pour l'équipe. Préparer 3-5 templates de réponse rapide pour les demandes courantes (confirmation de réservation, suivi, relance).</p>
+        <p class="task-desc">Documenter les règles spécifiques à chaque type d'espace : horaires d'ouverture, durées de créneau, tarifs, conditions d'annulation, équipements inclus. Distinguer les 14 espaces de répétition/enregistrement et l'espace événementiel.</p>
         <div class="tests-block">
           <div class="tests-label">✓ Tests d'acceptance</div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Signature visible et correcte sur chaque email sortant</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Templates accessibles en 1 clic depuis la boîte de réception</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Variables de personnalisation (nom, prénom) fonctionnelles dans les templates</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">15 espaces documentés avec leurs règles respectives</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Règles de l'espace événementiel distinctes (concerts, showcases, masterclasses)</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Matrice validée par Stéphane Ichaï (Responsable Opérationnel)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" style="border-left:3px solid #ef4444">
+      <div class="task-header" onclick="toggleTask(this)">
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#ef4444')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="task-meta">
+          <div class="task-id-row">
+            <span class="task-id">S1-4</span>
+            <span class="task-title">Inventorier les équipements des 15 espaces</span>
+          </div>
+          <span class="badge badge-inventaire">Inventaire — Équipements</span>
+        </div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-detail">
+        <p class="task-desc">Réaliser un inventaire complet de tous les équipements par espace : matériel audio, instruments, mobilier technique, éclairage. Documenter l'état, la valeur et la date de dernière maintenance de chaque équipement.</p>
+        <div class="tests-block">
+          <div class="tests-label">✓ Tests d'acceptance</div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Fichier d'inventaire complet pour les 15 espaces</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Chaque équipement a un ID, un état et une valeur</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Espace événementiel inventorié séparément (sono, éclairage, scène)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" style="border-left:3px solid #ef4444">
+      <div class="task-header" onclick="toggleTask(this)">
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#ef4444')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="task-meta">
+          <div class="task-id-row">
+            <span class="task-id">S1-5</span>
+            <span class="task-title">Créer les fiches équipement dans HubSpot</span>
+          </div>
+          <span class="badge badge-inventaire">Inventaire — HubSpot</span>
+        </div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-detail">
+        <p class="task-desc">Structurer un objet personnalisé ou des propriétés dédiées dans HubSpot pour suivre les équipements : nom, espace associé, état, date de maintenance, valeur. Permettre le suivi et les alertes de maintenance.</p>
+        <div class="tests-block">
+          <div class="tests-label">✓ Tests d'acceptance</div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Propriétés/objet équipement créé dans HubSpot</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Données d'inventaire importées et associées aux espaces</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Vue filtrée par espace fonctionnelle</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SPRINT 2 — Conception & Paramétrage ═══════════════════ -->
+  <div class="sprint" data-sprint="sprint-2">
+    <div class="sprint-header">
+      <span class="sprint-label" style="color:#f97316">Sprint 2</span>
+      <span class="sprint-title">Conception &amp; Paramétrage HubSpot</span>
+      <span class="sprint-count">6 tâches</span>
+    </div>
+    <p class="sprint-sub">Phase 5 — Mars-Avril 2026 · Architecture CRM, workflows, planning opérationnel</p>
+
+    <div class="task" style="border-left:3px solid #f97316">
+      <div class="task-header" onclick="toggleTask(this)">
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#f97316')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="task-meta">
+          <div class="task-id-row">
+            <span class="task-id">S2-1</span>
+            <span class="task-title">Modéliser l'architecture des données CRM</span>
+          </div>
+          <span class="badge badge-crm">CRM — Architecture</span>
+        </div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-detail">
+        <p class="task-desc">Concevoir et implémenter le modèle de données dans HubSpot : fiches contacts (clients, prospects, partenaires), fiches entreprises, objets personnalisés pour les espaces, pipeline commercial, événements. S'appuyer sur le mapping réalisé en phase 2.</p>
+        <div class="tests-block">
+          <div class="tests-label">✓ Tests d'acceptance</div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Toutes les propriétés personnalisées créées selon le mapping</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Associations entre objets configurées (contact ↔ espace ↔ deal)</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Schéma de données documenté et validé</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" style="border-left:3px solid #f97316">
+      <div class="task-header" onclick="toggleTask(this)">
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#f97316')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="task-meta">
+          <div class="task-id-row">
+            <span class="task-id">S2-2</span>
+            <span class="task-title">Configurer les pipelines commerciaux</span>
+          </div>
+          <span class="badge badge-crm">CRM — Pipeline</span>
+        </div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-detail">
+        <p class="task-desc">Créer les pipelines adaptés : pipeline réservation studio (demande → confirmation → en cours → terminé), pipeline événementiel (demande → devis → contrat → logistique → post-event), pipeline commercial (prospect → qualifié → proposition → gagné/perdu).</p>
+        <div class="tests-block">
+          <div class="tests-label">✓ Tests d'acceptance</div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">3 pipelines créés avec étapes et probabilités configurées</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Propriétés obligatoires définies par étape</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Vues Kanban fonctionnelles pour chaque pipeline</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" style="border-left:3px solid #f97316">
+      <div class="task-header" onclick="toggleTask(this)">
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#f97316')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="task-meta">
+          <div class="task-id-row">
+            <span class="task-id">S2-3</span>
+            <span class="task-title">Créer les workflows automatisés</span>
+          </div>
+          <span class="badge badge-crm">CRM — Workflows</span>
+        </div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-detail">
+        <p class="task-desc">Configurer les workflows d'automatisation : confirmation de réservation par email, rappels J-1 et J-3, relance post-session pour feedback, relance commerciale prospects inactifs, alertes internes (nouvelle demande événementielle, annulation).</p>
+        <div class="tests-block">
+          <div class="tests-label">✓ Tests d'acceptance</div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Workflow de confirmation réservation → email envoyé en &lt;1 min</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Rappels J-1 et J-3 déclenchés automatiquement</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Relance commerciale après 7j d'inactivité → email envoyé</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Notification Slack/email interne sur nouvelle demande événementielle</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" style="border-left:3px solid #22c55e">
+      <div class="task-header" onclick="toggleTask(this)">
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#22c55e')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="task-meta">
+          <div class="task-id-row">
+            <span class="task-id">S2-4</span>
+            <span class="task-title">Configurer le planning multi-espaces (Studio Planner)</span>
+          </div>
+          <span class="badge badge-planning">Planning Op — Studio Planner</span>
+        </div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-detail">
+        <p class="task-desc">Mise en place du planning opérationnel multi-espaces via Studio Planner intégré à HubSpot. Configurer les 15 espaces avec leurs créneaux, tarifs et contraintes. Sous-traitance Tom Randeau pour le développement opérationnel.</p>
+        <div class="tests-block">
+          <div class="tests-label">✓ Tests d'acceptance</div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">15 espaces visibles sur le planning avec vue jour/semaine/mois</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Créneaux configurables par espace (durée, tarif, disponibilité)</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Réservation depuis le planning → crée automatiquement un deal HubSpot</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" style="border-left:3px solid #22c55e">
+      <div class="task-header" onclick="toggleTask(this)">
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#22c55e')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="task-meta">
+          <div class="task-id-row">
+            <span class="task-id">S2-5</span>
+            <span class="task-title">Paramétrer l'espace événementiel dans le planning</span>
+          </div>
+          <span class="badge badge-planning">Planning Op — Événementiel</span>
+        </div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-detail">
+        <p class="task-desc">Configurer l'espace événementiel avec ses spécificités : créneaux longs (demi-journée, journée, soirée), types d'événements (concert, showcase, masterclass, privé), tarification spécifique, checklist logistique associée.</p>
+        <div class="tests-block">
+          <div class="tests-label">✓ Tests d'acceptance</div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Espace événementiel distinct des espaces studio dans le planning</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Types d'événements sélectionnables avec tarifs associés</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Checklist logistique auto-générée selon le type d'événement</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" style="border-left:3px solid #f97316">
+      <div class="task-header" onclick="toggleTask(this)">
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#f97316')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="task-meta">
+          <div class="task-id-row">
+            <span class="task-id">S2-6</span>
+            <span class="task-title">Configurer les droits d'accès par profil utilisateur</span>
+          </div>
+          <span class="badge badge-crm">CRM — Sécurité</span>
+        </div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-detail">
+        <p class="task-desc">Définir et implémenter les rôles HubSpot : direction (accès complet + reporting), équipe commerciale (pipeline + contacts), accueil (planning + réservations), événementiel (pipeline event + logistique). Restreindre les accès sensibles.</p>
+        <div class="tests-block">
+          <div class="tests-label">✓ Tests d'acceptance</div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">4 profils créés avec permissions distinctes</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Accueil ne peut pas supprimer de contacts ou modifier les pipelines</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Direction a accès à tous les dashboards et exports</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SPRINT 3 — Migration ═══════════════════ -->
+  <div class="sprint" data-sprint="sprint-3">
+    <div class="sprint-header">
+      <span class="sprint-label" style="color:#f97316">Sprint 3</span>
+      <span class="sprint-title">Migration des données &amp; Intégrations</span>
+      <span class="sprint-count">4 tâches</span>
+    </div>
+    <p class="sprint-sub">Phase 6 — Mars-Avril 2026 · Nettoyage, import et intégrations outils existants</p>
+
+    <div class="task" style="border-left:3px solid #f97316">
+      <div class="task-header" onclick="toggleTask(this)">
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#f97316')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="task-meta">
+          <div class="task-id-row">
+            <span class="task-id">S3-1</span>
+            <span class="task-title">Nettoyer et dédoublonner les données existantes</span>
+          </div>
+          <span class="badge badge-crm">CRM — Migration</span> <span class="status status-wip">En cours (Mahaut)</span>
+        </div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-detail">
+        <p class="task-desc">Nettoyage des fichiers Excel, bases email et historique de réservations. Dédoublonnage des contacts, normalisation des formats (téléphone, email, adresse). Structuration selon le mapping HubSpot validé en phase 2.</p>
+        <div class="tests-block">
+          <div class="tests-label">✓ Tests d'acceptance</div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">0 doublons dans le fichier final d'import</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Formats normalisés : téléphone (+33), email en minuscules</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Rapport qualité avant/après nettoyage produit</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" style="border-left:3px solid #f97316">
+      <div class="task-header" onclick="toggleTask(this)">
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#f97316')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="task-meta">
+          <div class="task-id-row">
+            <span class="task-id">S3-2</span>
+            <span class="task-title">Importer les données par lots dans HubSpot</span>
+          </div>
+          <span class="badge badge-crm">CRM — Migration</span>
+        </div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-detail">
+        <p class="task-desc">Import séquentiel par lots : contacts, entreprises, historique réservations, données événementielles. Contrôle qualité à chaque étape (nombre de lignes, associations, champs manquants).</p>
+        <div class="tests-block">
+          <div class="tests-label">✓ Tests d'acceptance</div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Nombre de fiches importées = nombre de lignes du fichier source</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Associations contact ↔ entreprise ↔ deal correctes</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Aucune erreur d'import dans le log HubSpot</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" style="border-left:3px solid #f97316">
+      <div class="task-header" onclick="toggleTask(this)">
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#f97316')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="task-meta">
+          <div class="task-id-row">
+            <span class="task-id">S3-3</span>
+            <span class="task-title">Valider les données migrées avec les équipes métier</span>
+          </div>
+          <span class="badge badge-crm">CRM — Validation</span>
+        </div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-detail">
+        <p class="task-desc">Session de validation avec Mahaut (commercial) et Stéphane (ops) : vérification d'un échantillon de fiches, validation des associations, test des vues et filtres. Corrections si nécessaire.</p>
+        <div class="tests-block">
+          <div class="tests-label">✓ Tests d'acceptance</div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Échantillon de 20 fiches vérifié → 100% conforme</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Équipe commerciale retrouve ses contacts et historique</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">PV de recette des données signé</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" style="border-left:3px solid #22c55e">
+      <div class="task-header" onclick="toggleTask(this)">
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#22c55e')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="task-meta">
+          <div class="task-id-row">
+            <span class="task-id">S3-4</span>
+            <span class="task-title">Intégrer les outils existants (site web, paiement, agenda)</span>
+          </div>
+          <span class="badge badge-planning">Planning Op — Intégrations</span>
+        </div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-detail">
+        <p class="task-desc">Connecter HubSpot aux outils existants du studio : formulaire de réservation du site web, solution de paiement, messagerie (Gmail/Outlook), agenda partagé (Google Calendar). Documenter chaque intégration.</p>
+        <div class="tests-block">
+          <div class="tests-label">✓ Tests d'acceptance</div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Formulaire site web → crée un contact + deal dans HubSpot</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Réservation confirmée → créneau bloqué dans l'agenda partagé</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Documentation des intégrations livrée</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SPRINT 4 — Omnicanal ═══════════════════ -->
+  <div class="sprint" data-sprint="sprint-4">
+    <div class="sprint-header">
+      <span class="sprint-label" style="color:#a855f7">Sprint 4</span>
+      <span class="sprint-title">Gestion Omnicanale</span>
+      <span class="sprint-count">6 tâches</span>
+    </div>
+    <p class="sprint-sub">Avril 2026 · Connexion Email + WhatsApp + Aircall dans HubSpot</p>
+
+    <div class="task" style="border-left:3px solid #a855f7">
+      <div class="task-header" onclick="toggleTask(this)">
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#a855f7')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="task-meta">
+          <div class="task-id-row">
+            <span class="task-id">S4-1</span>
+            <span class="task-title">Connecter la boîte email d'équipe à HubSpot</span>
+          </div>
+          <span class="badge badge-omni">Omnicanal — Email</span>
+        </div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-detail">
+        <p class="task-desc">Paramètres > Boîte de réception > Canaux > Email d'équipe. Connecter via Google/Microsoft 365/IMAP. Configurer les règles de routage, attribution automatique, signatures et templates de réponse rapide.</p>
+        <div class="tests-block">
+          <div class="tests-label">✓ Tests d'acceptance</div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Email entrant → apparaît dans la boîte de réception partagée HubSpot</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Réponse depuis HubSpot → reçue correctement par le destinataire</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Échange loggé sur la timeline du contact et du deal</span></div>
         </div>
       </div>
     </div>
 
     <div class="task" style="border-left:3px solid #a855f7">
       <div class="task-header" onclick="toggleTask(this)">
-        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#a855f7')">
-          <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="task-meta">
-          <div class="task-id-row">
-            <span class="task-id">S1-4</span>
-            <span class="task-title">Vérifier le logging email sur la timeline contact</span>
-          </div>
-          <span class="badge" style="background:#a855f722;color:#a855f7;border:1px solid #a855f744">HubSpot — CRM</span>
-        </div>
-        <span class="chevron">▼</span>
-      </div>
-      <div class="task-detail">
-        <p class="task-desc">S'assurer que chaque échange email (entrant et sortant) est automatiquement enregistré sur la timeline du contact et du deal associé. Vérifier la création automatique de contacts pour les emails de nouveaux expéditeurs.</p>
-        <div class="tests-block">
-          <div class="tests-label">✓ Tests d'acceptance</div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Email envoyé/reçu → visible sur la timeline du contact</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Email associé au deal si le contact est lié à un deal</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Nouvel expéditeur → fiche contact créée automatiquement</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SPRINT 2 — WhatsApp -->
-  <div class="sprint" data-sprint="sprint-2">
-    <div class="sprint-header">
-      <span class="sprint-label" style="color:#7c3aed">Sprint 2</span>
-      <span class="sprint-title">Intégration WhatsApp</span>
-      <span class="sprint-count">4 tâches</span>
-    </div>
-    <p class="sprint-sub">Connecter WhatsApp Business à HubSpot via Meta Business</p>
-
-    <div class="task" style="border-left:3px solid #7c3aed">
-      <div class="task-header" onclick="toggleTask(this)">
-        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#7c3aed')">
-          <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="task-meta">
-          <div class="task-id-row">
-            <span class="task-id">S2-1</span>
-            <span class="task-title">Vérifier le compte Meta Business</span>
-          </div>
-          <span class="badge" style="background:#7c3aed22;color:#7c3aed;border:1px solid #7c3aed44">Meta Business</span>
-        </div>
-        <span class="chevron">▼</span>
-      </div>
-      <div class="task-detail">
-        <p class="task-desc">S'assurer que le compte Meta Business est vérifié (badge vert). Vérifier que l'API WhatsApp Business est activée et qu'un numéro de téléphone dédié est disponible (non utilisé sur l'app WhatsApp classique).</p>
-        <div class="tests-block">
-          <div class="tests-label">✓ Tests d'acceptance</div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Compte Meta Business → statut "Vérifié"</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">API WhatsApp Business → activée dans le dashboard Meta</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Numéro dédié identifié et disponible</span></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="task" style="border-left:3px solid #7c3aed">
-      <div class="task-header" onclick="toggleTask(this)">
-        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#7c3aed')">
-          <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="task-meta">
-          <div class="task-id-row">
-            <span class="task-id">S2-2</span>
-            <span class="task-title">Connecter WhatsApp Business à HubSpot</span>
-          </div>
-          <span class="badge" style="background:#7c3aed22;color:#7c3aed;border:1px solid #7c3aed44">HubSpot — Canaux</span>
-        </div>
-        <span class="chevron">▼</span>
-      </div>
-      <div class="task-detail">
-        <p class="task-desc">Dans HubSpot : Paramètres > Boîte de réception > Canaux > Connecter un canal > WhatsApp. S'authentifier sur Meta Business, sélectionner le numéro WhatsApp Business, valider la connexion.</p>
-        <div class="tests-block">
-          <div class="tests-label">✓ Tests d'acceptance</div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">WhatsApp apparaît comme canal connecté dans HubSpot</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Envoyer un message WhatsApp au numéro → il apparaît dans la boîte de réception HubSpot</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Répondre depuis HubSpot → le message arrive sur WhatsApp du client</span></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="task" style="border-left:3px solid #7c3aed">
-      <div class="task-header" onclick="toggleTask(this)">
-        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#7c3aed')">
-          <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="task-meta">
-          <div class="task-id-row">
-            <span class="task-id">S2-3</span>
-            <span class="task-title">Créer les templates de messages WhatsApp</span>
-          </div>
-          <span class="badge" style="background:#7c3aed22;color:#7c3aed;border:1px solid #7c3aed44">Meta Business + HubSpot</span>
-        </div>
-        <span class="chevron">▼</span>
-      </div>
-      <div class="task-detail">
-        <p class="task-desc">Créer les templates de messages pré-approuvés par Meta pour les conversations sortantes : message de bienvenue, confirmation de réservation, rappel de check-in, suivi post-séjour. Soumettre à validation Meta.</p>
-        <div class="tests-block">
-          <div class="tests-label">✓ Tests d'acceptance</div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Templates soumis → statut "Approuvé" dans Meta Business Manager</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Templates accessibles depuis la boîte de réception HubSpot</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Variables de personnalisation (nom, villa, dates) fonctionnelles</span></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="task" style="border-left:3px solid #7c3aed">
-      <div class="task-header" onclick="toggleTask(this)">
-        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#7c3aed')">
-          <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="task-meta">
-          <div class="task-id-row">
-            <span class="task-id">S2-4</span>
-            <span class="task-title">Configurer les réponses automatiques WhatsApp</span>
-          </div>
-          <span class="badge" style="background:#7c3aed22;color:#7c3aed;border:1px solid #7c3aed44">HubSpot — Workflows</span>
-        </div>
-        <span class="chevron">▼</span>
-      </div>
-      <div class="task-detail">
-        <p class="task-desc">Paramétrer un message d'accueil automatique pour les nouvelles conversations WhatsApp et un message d'absence hors horaires. Configurer le routage vers l'agent disponible.</p>
-        <div class="tests-block">
-          <div class="tests-label">✓ Tests d'acceptance</div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Nouveau message WhatsApp → réponse automatique de bienvenue envoyée</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Message hors horaires → message d'absence envoyé avec délai de réponse</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Conversation assignée automatiquement à un agent disponible</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SPRINT 3 — Aircall -->
-  <div class="sprint" data-sprint="sprint-3">
-    <div class="sprint-header">
-      <span class="sprint-label" style="color:#6d28d9">Sprint 3</span>
-      <span class="sprint-title">Intégration Aircall</span>
-      <span class="sprint-count">4 tâches</span>
-    </div>
-    <p class="sprint-sub">Installer et configurer Aircall pour la téléphonie dans HubSpot</p>
-
-    <div class="task" style="border-left:3px solid #6d28d9">
-      <div class="task-header" onclick="toggleTask(this)">
-        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#6d28d9')">
-          <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="task-meta">
-          <div class="task-id-row">
-            <span class="task-id">S3-1</span>
-            <span class="task-title">Installer l'intégration Aircall depuis le Marketplace</span>
-          </div>
-          <span class="badge" style="background:#6d28d922;color:#6d28d9;border:1px solid #6d28d944">HubSpot Marketplace</span>
-        </div>
-        <span class="chevron">▼</span>
-      </div>
-      <div class="task-detail">
-        <p class="task-desc">Depuis le Marketplace HubSpot, rechercher et installer l'application Aircall. Authentifier le compte Aircall et autoriser les permissions nécessaires (lecture/écriture contacts, deals, activités).</p>
-        <div class="tests-block">
-          <div class="tests-label">✓ Tests d'acceptance</div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Aircall apparaît dans les applications connectées de HubSpot</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Statut de connexion → "Actif" dans les paramètres d'intégration</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Permissions correctement accordées (pas d'erreur d'authentification)</span></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="task" style="border-left:3px solid #6d28d9">
-      <div class="task-header" onclick="toggleTask(this)">
-        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#6d28d9')">
-          <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="task-meta">
-          <div class="task-id-row">
-            <span class="task-id">S3-2</span>
-            <span class="task-title">Mapper les utilisateurs Aircall ↔ HubSpot</span>
-          </div>
-          <span class="badge" style="background:#6d28d922;color:#6d28d9;border:1px solid #6d28d944">Aircall + HubSpot</span>
-        </div>
-        <span class="chevron">▼</span>
-      </div>
-      <div class="task-detail">
-        <p class="task-desc">Associer chaque utilisateur Aircall à son homologue HubSpot pour que les appels soient correctement attribués. Vérifier que tous les agents de l'équipe sont mappés.</p>
-        <div class="tests-block">
-          <div class="tests-label">✓ Tests d'acceptance</div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Chaque utilisateur Aircall est lié à un utilisateur HubSpot</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Appel passé par Agent A → loggé sous Agent A dans HubSpot</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Aucun utilisateur orphelin dans le mapping</span></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="task" style="border-left:3px solid #6d28d9">
-      <div class="task-header" onclick="toggleTask(this)">
-        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#6d28d9')">
-          <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="task-meta">
-          <div class="task-id-row">
-            <span class="task-id">S3-3</span>
-            <span class="task-title">Configurer le logging automatique des appels</span>
-          </div>
-          <span class="badge" style="background:#6d28d922;color:#6d28d9;border:1px solid #6d28d944">Aircall — Settings</span>
-        </div>
-        <span class="chevron">▼</span>
-      </div>
-      <div class="task-detail">
-        <p class="task-desc">Activer le logging automatique dans les paramètres Aircall : enregistrement des appels entrants/sortants, durée, notes d'appel, et enregistrements vocaux (si activé). Configurer le rattachement automatique aux fiches contact et deal.</p>
-        <div class="tests-block">
-          <div class="tests-label">✓ Tests d'acceptance</div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Appel passé → activité "Appel" créée sur la timeline du contact</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Durée, direction (entrant/sortant) et notes enregistrées correctement</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Enregistrement audio accessible depuis la fiche contact (si activé)</span></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="task" style="border-left:3px solid #6d28d9">
-      <div class="task-header" onclick="toggleTask(this)">
-        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#6d28d9')">
-          <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="task-meta">
-          <div class="task-id-row">
-            <span class="task-id">S3-4</span>
-            <span class="task-title">Activer la création automatique de contacts</span>
-          </div>
-          <span class="badge" style="background:#6d28d922;color:#6d28d9;border:1px solid #6d28d944">Aircall — Settings</span>
-        </div>
-        <span class="chevron">▼</span>
-      </div>
-      <div class="task-detail">
-        <p class="task-desc">Configurer Aircall pour créer automatiquement une fiche contact dans HubSpot lorsqu'un numéro inconnu appelle. Définir les propriétés par défaut (source = "Appel entrant", lifecycle stage).</p>
-        <div class="tests-block">
-          <div class="tests-label">✓ Tests d'acceptance</div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Appel d'un numéro inconnu → fiche contact créée dans HubSpot</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Numéro de téléphone correctement enregistré sur la fiche</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Source du contact = "Appel entrant" (ou valeur définie)</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SPRINT 4 — Unification -->
-  <div class="sprint" data-sprint="sprint-4">
-    <div class="sprint-header">
-      <span class="sprint-label" style="color:#581c87">Sprint 4</span>
-      <span class="sprint-title">Unification &amp; Tests omnicanaux</span>
-      <span class="sprint-count">4 tâches</span>
-    </div>
-    <p class="sprint-sub">Centraliser tous les canaux et valider le parcours client complet</p>
-
-    <div class="task" style="border-left:3px solid #581c87">
-      <div class="task-header" onclick="toggleTask(this)">
-        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#581c87')">
-          <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="task-meta">
-          <div class="task-id-row">
-            <span class="task-id">S4-1</span>
-            <span class="task-title">Configurer la boîte de réception partagée omnicanale</span>
-          </div>
-          <span class="badge" style="background:#581c8722;color:#9333ea;border:1px solid #581c8744">HubSpot — Inbox</span>
-        </div>
-        <span class="chevron">▼</span>
-      </div>
-      <div class="task-detail">
-        <p class="task-desc">Vérifier que les 3 canaux (Email, WhatsApp, Aircall) convergent dans la même boîte de réception partagée. Créer des vues filtrées par canal, par agent et par statut. Configurer les notifications pour les nouveaux messages.</p>
-        <div class="tests-block">
-          <div class="tests-label">✓ Tests d'acceptance</div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Email, WhatsApp et appels visibles dans la même boîte de réception</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Filtre par canal → affiche uniquement les conversations du canal sélectionné</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Notifications en temps réel pour chaque nouveau message/appel</span></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="task" style="border-left:3px solid #581c87">
-      <div class="task-header" onclick="toggleTask(this)">
-        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#581c87')">
-          <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#a855f7')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <div class="task-meta">
           <div class="task-id-row">
             <span class="task-id">S4-2</span>
-            <span class="task-title">Définir les SLA et règles de priorisation</span>
+            <span class="task-title">Connecter WhatsApp Business à HubSpot</span>
           </div>
-          <span class="badge" style="background:#581c8722;color:#9333ea;border:1px solid #581c8744">HubSpot — Service Hub</span>
+          <span class="badge badge-omni">Omnicanal — WhatsApp</span>
         </div>
         <span class="chevron">▼</span>
       </div>
       <div class="task-detail">
-        <p class="task-desc">Configurer les SLA par canal : temps de première réponse (email ≤ 4h, WhatsApp ≤ 30min, appel manqué ≤ 1h). Mettre en place des alertes d'escalade quand un SLA est sur le point d'être dépassé.</p>
+        <p class="task-desc">Prérequis : compte Meta Business vérifié + numéro dédié. Paramètres > Canaux > WhatsApp. Authentifier Meta Business, sélectionner le numéro, créer les templates de messages (bienvenue, confirmation réservation, rappel) et les soumettre à validation Meta.</p>
         <div class="tests-block">
           <div class="tests-label">✓ Tests d'acceptance</div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">SLA affiché sur chaque conversation dans la boîte de réception</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Conversation non-répondue après 80% du SLA → alerte envoyée au manager</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Message WhatsApp entrant → visible dans la boîte de réception HubSpot</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Templates approuvés par Meta et utilisables depuis HubSpot</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Réponse automatique de bienvenue configurée et fonctionnelle</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" style="border-left:3px solid #a855f7">
+      <div class="task-header" onclick="toggleTask(this)">
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#a855f7')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="task-meta">
+          <div class="task-id-row">
+            <span class="task-id">S4-3</span>
+            <span class="task-title">Installer et configurer Aircall</span>
+          </div>
+          <span class="badge badge-omni">Omnicanal — Aircall</span>
+        </div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-detail">
+        <p class="task-desc">Installer Aircall depuis le Marketplace HubSpot. Mapper les utilisateurs Aircall ↔ HubSpot. Activer le logging automatique des appels (durée, direction, notes, enregistrements). Configurer la création automatique de contacts pour les numéros inconnus.</p>
+        <div class="tests-block">
+          <div class="tests-label">✓ Tests d'acceptance</div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Appel passé → activité créée sur la timeline du contact</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Numéro inconnu → fiche contact créée automatiquement</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Enregistrements audio accessibles depuis HubSpot</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" style="border-left:3px solid #a855f7">
+      <div class="task-header" onclick="toggleTask(this)">
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#a855f7')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="task-meta">
+          <div class="task-id-row">
+            <span class="task-id">S4-4</span>
+            <span class="task-title">Unifier la boîte de réception omnicanale</span>
+          </div>
+          <span class="badge badge-omni">Omnicanal — Inbox</span>
+        </div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-detail">
+        <p class="task-desc">Vérifier que les 3 canaux convergent dans la même boîte de réception partagée. Créer des vues filtrées par canal, par agent et par statut. Configurer les notifications temps réel.</p>
+        <div class="tests-block">
+          <div class="tests-label">✓ Tests d'acceptance</div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Email + WhatsApp + appels visibles dans la même inbox</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Filtre par canal fonctionnel</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Timeline contact → affiche les 3 canaux en ordre chronologique</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" style="border-left:3px solid #a855f7">
+      <div class="task-header" onclick="toggleTask(this)">
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#a855f7')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="task-meta">
+          <div class="task-id-row">
+            <span class="task-id">S4-5</span>
+            <span class="task-title">Définir les SLA par canal</span>
+          </div>
+          <span class="badge badge-omni">Omnicanal — SLA</span>
+        </div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-detail">
+        <p class="task-desc">Configurer les SLA de temps de réponse : email ≤ 4h, WhatsApp ≤ 30min, appel manqué rappelé ≤ 1h. Mettre en place les alertes d'escalade quand un SLA approche sa limite.</p>
+        <div class="tests-block">
+          <div class="tests-label">✓ Tests d'acceptance</div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">SLA affiché sur chaque conversation dans l'inbox</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Alerte à 80% du SLA → notification au manager</span></div>
           <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Rapport SLA accessible dans les dashboards</span></div>
         </div>
       </div>
     </div>
 
-    <div class="task" style="border-left:3px solid #581c87">
+    <div class="task" style="border-left:3px solid #a855f7">
       <div class="task-header" onclick="toggleTask(this)">
-        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#581c87')">
-          <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#a855f7')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <div class="task-meta">
           <div class="task-id-row">
-            <span class="task-id">S4-3</span>
+            <span class="task-id">S4-6</span>
             <span class="task-title">Tester le parcours client omnicanal complet</span>
           </div>
-          <span class="badge" style="background:#581c8722;color:#9333ea;border:1px solid #581c8744">QA — Tous canaux</span>
+          <span class="badge badge-omni">Omnicanal — QA</span>
         </div>
         <span class="chevron">▼</span>
       </div>
       <div class="task-detail">
-        <p class="task-desc">Simuler un parcours client complet : demande initiale par email → suivi par WhatsApp → appel de confirmation via Aircall. Vérifier que toute l'historique est visible sur une seule fiche contact avec la chronologie correcte.</p>
+        <p class="task-desc">Simuler un parcours complet : demande par email → suivi par WhatsApp → appel de confirmation Aircall. Vérifier que toute l'historique est unifiée sur la fiche contact.</p>
         <div class="tests-block">
           <div class="tests-label">✓ Tests d'acceptance</div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Timeline du contact → affiche email, message WhatsApp et appel dans l'ordre chronologique</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Chaque interaction identifiable par son icône de canal</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Aucune donnée manquante ou dupliquée entre les 3 canaux</span></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="task" style="border-left:3px solid #581c87">
-      <div class="task-header" onclick="toggleTask(this)">
-        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#581c87')">
-          <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="task-meta">
-          <div class="task-id-row">
-            <span class="task-id">S4-4</span>
-            <span class="task-title">Former l'équipe à la gestion omnicanale</span>
-          </div>
-          <span class="badge" style="background:#581c8722;color:#9333ea;border:1px solid #581c8744">Formation</span>
-        </div>
-        <span class="chevron">▼</span>
-      </div>
-      <div class="task-detail">
-        <p class="task-desc">Organiser une session de formation pour l'équipe : navigation dans la boîte de réception partagée, réponse sur chaque canal, utilisation des templates, lecture de la timeline contact. Créer un guide de référence rapide.</p>
-        <div class="tests-block">
-          <div class="tests-label">✓ Tests d'acceptance</div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Chaque agent a répondu avec succès sur les 3 canaux en session de formation</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Guide de référence rapide distribué à l'équipe</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Aucune question bloquante non-résolue après la formation</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">3 interactions (email, WhatsApp, appel) visibles sur la même fiche contact</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Ordre chronologique respecté sur la timeline</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Aucune donnée manquante ou dupliquée</span></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- FUTUR SCOPE -->
+  <!-- ═══════════════════ SPRINT 5 — Tests & Recette ═══════════════════ -->
+  <div class="sprint" data-sprint="sprint-5">
+    <div class="sprint-header">
+      <span class="sprint-label" style="color:#f97316">Sprint 5</span>
+      <span class="sprint-title">Tests, Recette &amp; Formation</span>
+      <span class="sprint-count">5 tâches</span>
+    </div>
+    <p class="sprint-sub">Phases 7 &amp; 8 — Mai-Juin 2026 · UAT, corrections, formation par profil</p>
+
+    <div class="task" style="border-left:3px solid #f97316">
+      <div class="task-header" onclick="toggleTask(this)">
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#f97316')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="task-meta">
+          <div class="task-id-row">
+            <span class="task-id">S5-1</span>
+            <span class="task-title">Exécuter les tests utilisateurs (UAT)</span>
+          </div>
+          <span class="badge badge-crm">CRM — Recette</span>
+        </div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-detail">
+        <p class="task-desc">Tests utilisateurs sur tous les parcours : réservation d'un espace, gestion d'un événement, suivi d'un prospect, facturation, reporting. Chaque scénario testé par les utilisateurs finaux (accueil, commercial, événementiel, direction).</p>
+        <div class="tests-block">
+          <div class="tests-label">✓ Tests d'acceptance</div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Plan de recette exécuté avec tous les scénarios documentés</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Chaque parcours testé par au moins 2 utilisateurs finaux</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Anomalies documentées avec sévérité et priorité</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" style="border-left:3px solid #f97316">
+      <div class="task-header" onclick="toggleTask(this)">
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#f97316')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="task-meta">
+          <div class="task-id-row">
+            <span class="task-id">S5-2</span>
+            <span class="task-title">Corriger les anomalies et re-tester</span>
+          </div>
+          <span class="badge badge-crm">CRM — Corrections</span>
+        </div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-detail">
+        <p class="task-desc">Prioriser et corriger toutes les anomalies critiques et majeures identifiées en UAT. Re-tester chaque correction. Documenter les anomalies mineures acceptées pour le go-live.</p>
+        <div class="tests-block">
+          <div class="tests-label">✓ Tests d'acceptance</div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">0 anomalie critique ou majeure ouverte</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Registre des anomalies à jour avec statut de chaque item</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">PV de recette signé par les référents métier</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" style="border-left:3px solid #f97316">
+      <div class="task-header" onclick="toggleTask(this)">
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#f97316')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="task-meta">
+          <div class="task-id-row">
+            <span class="task-id">S5-3</span>
+            <span class="task-title">Former les équipes par profil</span>
+          </div>
+          <span class="badge badge-crm">CRM — Formation</span>
+        </div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-detail">
+        <p class="task-desc">Sessions de formation adaptées : équipe d'accueil (réservation, planning), équipe commerciale (leads, pipeline, relances), équipe événementielle (demandes, devis, logistique), direction (tableaux de bord, KPIs). Sessions pratiques sur cas réels.</p>
+        <div class="tests-block">
+          <div class="tests-label">✓ Tests d'acceptance</div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">4 sessions de formation réalisées (accueil, commercial, event, direction)</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Chaque participant a réalisé un parcours complet en autonomie</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Aucune question bloquante non résolue</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" style="border-left:3px solid #f97316">
+      <div class="task-header" onclick="toggleTask(this)">
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#f97316')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="task-meta">
+          <div class="task-id-row">
+            <span class="task-id">S5-4</span>
+            <span class="task-title">Créer les supports de formation et guides</span>
+          </div>
+          <span class="badge badge-crm">CRM — Documentation</span>
+        </div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-detail">
+        <p class="task-desc">Produire les supports de formation : guides utilisateurs par profil, vidéos tutos des parcours clés, fiches réflexes plastifiées pour l'accueil. Désigner 2 ambassadeurs CRM internes pour l'accompagnement au quotidien.</p>
+        <div class="tests-block">
+          <div class="tests-label">✓ Tests d'acceptance</div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Guides PDF livrés pour chaque profil</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Vidéos tutos enregistrées pour les 3 parcours principaux</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">2 ambassadeurs CRM désignés et formés</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" style="border-left:3px solid #ef4444">
+      <div class="task-header" onclick="toggleTask(this)">
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#ef4444')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="task-meta">
+          <div class="task-id-row">
+            <span class="task-id">S5-5</span>
+            <span class="task-title">Valider l'inventaire et les alertes de maintenance</span>
+          </div>
+          <span class="badge badge-inventaire">Inventaire — Validation</span>
+        </div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-detail">
+        <p class="task-desc">Vérifier que l'inventaire des équipements est complet et à jour dans HubSpot. Tester les alertes de maintenance préventive. Valider avec Stéphane Ichaï (ops).</p>
+        <div class="tests-block">
+          <div class="tests-label">✓ Tests d'acceptance</div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">100% des équipements présents dans HubSpot</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Alerte maintenance → notification envoyée au responsable</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Vue filtrée par espace et par état d'équipement fonctionnelle</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SPRINT 6 — Déploiement ═══════════════════ -->
+  <div class="sprint" data-sprint="sprint-6">
+    <div class="sprint-header">
+      <span class="sprint-label" style="color:#f97316">Sprint 6</span>
+      <span class="sprint-title">Déploiement &amp; Mise en production</span>
+      <span class="sprint-count">3 tâches</span>
+    </div>
+    <p class="sprint-sub">Phase 9 — Mai-Juin 2026 · Go-live, support rapproché, suivi incidents</p>
+
+    <div class="task" style="border-left:3px solid #f97316">
+      <div class="task-header" onclick="toggleTask(this)">
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#f97316')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="task-meta">
+          <div class="task-id-row">
+            <span class="task-id">S6-1</span>
+            <span class="task-title">Préparer et exécuter le go/no-go</span>
+          </div>
+          <span class="badge badge-crm">CRM — Déploiement</span>
+        </div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-detail">
+        <p class="task-desc">Préparer la checklist go/no-go : recette validée, formation terminée, données migrées, intégrations testées, support en place. Décision de go-live avec le comité de pilotage (Pierre Guimard + direction).</p>
+        <div class="tests-block">
+          <div class="tests-label">✓ Tests d'acceptance</div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Checklist go/no-go → tous les critères au vert</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Décision de go-live validée et documentée</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Date de bascule communiquée à toute l'équipe</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" style="border-left:3px solid #f97316">
+      <div class="task-header" onclick="toggleTask(this)">
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#f97316')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="task-meta">
+          <div class="task-id-row">
+            <span class="task-id">S6-2</span>
+            <span class="task-title">Mise en production</span>
+          </div>
+          <span class="badge badge-crm">CRM — Go-Live</span>
+        </div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-detail">
+        <p class="task-desc">Bascule vers le nouveau système. Déploiement progressif recommandé (espace par espace) pour limiter les risques. Activation de tous les workflows, intégrations et canaux omnicanaux en production.</p>
+        <div class="tests-block">
+          <div class="tests-label">✓ Tests d'acceptance</div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Système opérationnel → premières réservations traitées via HubSpot</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Workflows de confirmation et rappel fonctionnels en prod</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Aucune interruption de service pour les clients</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" style="border-left:3px solid #f97316">
+      <div class="task-header" onclick="toggleTask(this)">
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#f97316')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="task-meta">
+          <div class="task-id-row">
+            <span class="task-id">S6-3</span>
+            <span class="task-title">Support post-lancement J+1 à J+15</span>
+          </div>
+          <span class="badge badge-crm">CRM — Support</span>
+        </div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-detail">
+        <p class="task-desc">Cellule de support rapproché pendant 15 jours : suivi quotidien des incidents, ajustements en temps réel, permanence de Leslie Guilbert pour les questions urgentes. Tableau de suivi des incidents mis à jour quotidiennement.</p>
+        <div class="tests-block">
+          <div class="tests-label">✓ Tests d'acceptance</div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Tableau de suivi incidents renseigné quotidiennement J+1 à J+15</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Incidents critiques résolus en &lt;4h</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Taux d'adoption &gt;80% à J+15</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ FUTUR SCOPE ═══════════════════ -->
   <div class="sprint" data-sprint="futur">
     <div class="sprint-header">
       <span class="sprint-label" style="color:#475569">Backlog futur</span>
-      <span class="sprint-title" style="color:#475569">Évolutions post-déploiement</span>
-      <span class="sprint-count">3 idées</span>
+      <span class="sprint-title" style="color:#475569">Phase 10 — Optimisation continue &amp; Évolutions</span>
+      <span class="sprint-count">4 idées</span>
     </div>
 
     <div class="future-task">
       <div class="future-row">
         <span class="task-id">F-1</span>
-        <span class="future-title">Chatbot WhatsApp automatisé</span>
-        <span class="badge" style="background:#47556922;color:#475569;border:1px solid #47556944">HubSpot + WhatsApp</span>
+        <span class="future-title">Dashboard de suivi d'adoption et KPIs</span>
+        <span class="badge badge-crm">CRM</span>
         <span class="feasibility">✅ Faisable</span>
       </div>
-      <p class="future-desc">Créer un chatbot conversationnel WhatsApp dans HubSpot pour qualifier automatiquement les demandes entrantes avant transfert à un agent humain.</p>
-      <p class="future-note">À planifier après la mise en production — nécessite HubSpot Service Hub Pro.</p>
-    </div>
-
-    <div class="future-task">
-      <div class="future-row">
-        <span class="task-id">F-2</span>
-        <span class="future-title">Dashboard de reporting omnicanal</span>
-        <span class="badge" style="background:#47556922;color:#475569;border:1px solid #47556944">HubSpot — Reporting</span>
-        <span class="feasibility">✅ Faisable</span>
-      </div>
-      <p class="future-desc">Créer un tableau de bord unifié : volume par canal, temps de réponse moyen, taux de résolution, satisfaction client. Comparaison inter-canaux.</p>
+      <p class="future-desc">Tableau de bord : taux d'utilisation, taux d'occupation des espaces, temps de réponse moyen, CA par espace, satisfaction client. Revues mensuelles avec le comité de pilotage.</p>
       <p class="future-note">À planifier après 1 mois d'utilisation pour avoir des données significatives.</p>
     </div>
 
     <div class="future-task">
       <div class="future-row">
-        <span class="task-id">F-3</span>
-        <span class="future-title">Intégration SMS via Aircall</span>
-        <span class="badge" style="background:#47556922;color:#475569;border:1px solid #47556944">Aircall + HubSpot</span>
+        <span class="task-id">F-2</span>
+        <span class="future-title">Chatbot WhatsApp automatisé</span>
+        <span class="badge badge-omni">Omnicanal</span>
         <span class="feasibility">✅ Faisable</span>
       </div>
-      <p class="future-desc">Activer l'envoi/réception de SMS directement depuis Aircall, loggés sur la timeline HubSpot. 4ème canal de communication.</p>
-      <p class="future-note">Dépend du plan Aircall souscrit — vérifier la disponibilité de la fonctionnalité SMS.</p>
+      <p class="future-desc">Bot conversationnel pour qualifier les demandes entrantes (type d'espace, date, durée) avant transfert à un agent. Réduction du temps de traitement des demandes simples.</p>
+      <p class="future-note">Nécessite HubSpot Service Hub Pro — à évaluer après le go-live.</p>
+    </div>
+
+    <div class="future-task">
+      <div class="future-row">
+        <span class="task-id">F-3</span>
+        <span class="future-title">Reporting omnicanal unifié</span>
+        <span class="badge badge-omni">Omnicanal</span>
+        <span class="feasibility">✅ Faisable</span>
+      </div>
+      <p class="future-desc">Dashboard comparatif inter-canaux : volume par canal, taux de conversion par canal, temps de réponse, satisfaction. Identification du canal le plus performant par type de demande.</p>
+      <p class="future-note">À planifier après 2-3 mois d'utilisation omnicanale.</p>
+    </div>
+
+    <div class="future-task">
+      <div class="future-row">
+        <span class="task-id">F-4</span>
+        <span class="future-title">Roadmap d'évolutions fonctionnelles</span>
+        <span class="badge badge-crm">CRM</span>
+        <span class="feasibility">✅ Faisable</span>
+      </div>
+      <p class="future-desc">Ajustements workflows, nouvelles automatisations, évolutions du planning, intégration SMS via Aircall. Alignement trimestriel avec la stratégie business.</p>
+      <p class="future-note">Accompagnement continu — option de suivi post-déploiement 3 mois.</p>
     </div>
   </div>
 
+  <!-- FOOTER -->
   <div class="footer">
-    <span class="footer-brand">JINXA EURL · Projet Omnichannel</span>
+    <span class="footer-brand">JINXA EURL · Artistic Palace · Implémentation HubSpot CRM</span>
     <div class="footer-dots">
-      <div class="footer-dot-item"><div class="footer-dot" style="background:#a855f7"></div><span class="footer-dot-label">Email · 4</span></div>
-      <div class="footer-dot-item"><div class="footer-dot" style="background:#7c3aed"></div><span class="footer-dot-label">WhatsApp · 4</span></div>
-      <div class="footer-dot-item"><div class="footer-dot" style="background:#6d28d9"></div><span class="footer-dot-label">Aircall · 4</span></div>
-      <div class="footer-dot-item"><div class="footer-dot" style="background:#581c87"></div><span class="footer-dot-label">Unification · 4</span></div>
+      <div class="footer-dot-item"><div class="footer-dot" style="background:#f97316"></div><span class="footer-dot-label">CRM</span></div>
+      <div class="footer-dot-item"><div class="footer-dot" style="background:#a855f7"></div><span class="footer-dot-label">Omnicanal</span></div>
+      <div class="footer-dot-item"><div class="footer-dot" style="background:#22c55e"></div><span class="footer-dot-label">Planning Op</span></div>
+      <div class="footer-dot-item"><div class="footer-dot" style="background:#ef4444"></div><span class="footer-dot-label">Inventaire</span></div>
     </div>
   </div>
 
 </div>
 
 <script>
-  const STORAGE_KEY = 'omnichannel-task-states';
+  const STORAGE_KEY = 'ap-backlog-task-states';
 
   function loadStates() {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
@@ -686,7 +1095,7 @@
     document.querySelectorAll('.task').forEach(task => {
       const id = getTaskId(task);
       if (id && states[id]) {
-        const color = task.style.borderLeftColor || '#a855f7';
+        const color = task.style.borderLeftColor || '#f97316';
         applyDoneState(task, color);
       }
     });
