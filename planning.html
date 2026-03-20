@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<title>Planning Opérationnel — Implémentation HubSpot CRM</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: #0a0f1a;
+    color: #f1f5f9;
+    font-family: Georgia, 'Times New Roman', serif;
+    padding: 0;
+    min-height: 100vh;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+  /* Hero */
+  .hero {
+    padding: 80px 24px 60px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(180deg, #1a0a2e 0%, #0a0f1a 100%);
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at 50% 0%, #a855f715 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #a855f715; border: 1px solid #a855f733;
+    padding: 6px 16px; border-radius: 20px; margin-bottom: 20px;
+    font-size: 11px; font-family: monospace; color: #a855f7;
+    text-transform: uppercase; letter-spacing: .15em;
+  }
+  .hero-badge .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #a855f7; box-shadow: 0 0 8px #a855f7;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .4; }
+  }
+  .hero h1 {
+    font-size: 36px; font-weight: 400; letter-spacing: -.03em;
+    margin-bottom: 10px; position: relative;
+  }
+  .hero-sub {
+    color: #64748b; font-size: 16px; margin-bottom: 24px;
+    max-width: 600px; margin-left: auto; margin-right: auto;
+  }
+  .hero-stats {
+    display: flex; justify-content: center; gap: 32px; flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+  .hero-stat { text-align: center; }
+  .hero-stat-num { font-size: 28px; font-weight: 300; color: #a855f7; font-family: monospace; }
+  .hero-stat-label { font-size: 10px; color: #475569; font-family: monospace; text-transform: uppercase; letter-spacing: .1em; }
+  .hero-cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #a855f7; color: white; border: none;
+    padding: 10px 24px; border-radius: 8px; font-size: 13px;
+    font-family: monospace; cursor: pointer; text-decoration: none;
+    transition: all .2s;
+  }
+  .hero-cta:hover { background: #9333ea; transform: translateY(-1px); }
+
+  /* Section titles */
+  .section { padding: 48px 0; }
+  .section-title {
+    font-size: 18px; font-weight: 400; margin-bottom: 24px;
+    padding-bottom: 12px; border-bottom: 1px solid #1e293b;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-num {
+    font-size: 10px; font-family: monospace; color: #a855f7;
+    background: #a855f715; padding: 4px 8px; border-radius: 4px;
+    letter-spacing: .1em;
+  }
+
+  /* Animate on scroll */
+  .fade-in {
+    opacity: 0; transform: translateY(20px);
+    transition: opacity .6s ease, transform .6s ease;
+  }
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+  /* Header */
+  .header { margin-bottom: 36px; }
+  .header-meta {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 6px;
+  }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #a855f7; box-shadow: 0 0 8px #a855f7;
+  }
+  .header-meta span {
+    font-size: 11px; color: #475569; letter-spacing: .15em;
+    text-transform: uppercase; font-family: monospace;
+  }
+  h1 { font-size: 26px; font-weight: 400; letter-spacing: -.02em; margin-bottom: 6px; }
+  .header-sub { color: #475569; font-size: 14px; margin-bottom: 20px; }
+
+  /* Nav */
+  .nav { margin-bottom: 32px; }
+  .nav a {
+    font-size: 12px; font-family: monospace; color: #a855f7;
+    text-decoration: none; border: 1px solid #a855f744;
+    padding: 6px 14px; border-radius: 20px; transition: all .15s;
+  }
+  .nav a:hover { background: #a855f711; border-color: #a855f7; }
+
+  /* Team cards */
+  .team { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 40px; }
+  .team-card {
+    background: #111827; border: 1px solid #1e293b; border-radius: 8px;
+    padding: 16px; border-left: 3px solid;
+  }
+  .team-role { font-size: 11px; font-family: monospace; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 4px; }
+  .team-name { font-size: 15px; font-weight: 500; margin-bottom: 2px; }
+  .team-org { font-size: 11px; color: #475569; font-family: monospace; }
+
+  /* Gantt */
+  .gantt-wrapper { overflow-x: auto; margin-bottom: 40px; }
+  .gantt {
+    display: grid;
+    grid-template-columns: 240px repeat(18, 1fr);
+    gap: 0;
+    min-width: 900px;
+  }
+
+  /* Header row */
+  .gantt-header {
+    background: #111827; font-size: 10px; font-family: monospace;
+    color: #475569; text-transform: uppercase; letter-spacing: .08em;
+    padding: 10px 6px; text-align: center;
+    border-bottom: 1px solid #1e293b; border-right: 1px solid #0f172a;
+  }
+  .gantt-header:first-child { text-align: left; padding-left: 14px; }
+  .gantt-header.month-label {
+    background: #0f172a; color: #64748b; font-weight: 700; font-size: 11px;
+  }
+
+  /* Month groups */
+  .gantt-month-row {
+    display: contents;
+  }
+
+  /* Phase rows */
+  .gantt-phase {
+    display: contents;
+  }
+  .gantt-phase-label {
+    background: #111827; padding: 12px 14px;
+    border-bottom: 1px solid #1e293b;
+    font-size: 13px; font-weight: 500;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .gantt-phase-label .phase-num {
+    font-size: 10px; font-family: monospace; color: #475569;
+    background: #1e293b; padding: 2px 6px; border-radius: 3px;
+  }
+  .gantt-cell {
+    border-bottom: 1px solid #1e293b;
+    border-right: 1px solid #0f172a;
+    padding: 12px 2px;
+    position: relative;
+    min-height: 44px;
+  }
+
+  /* Bars */
+  .bar {
+    height: 22px; border-radius: 4px; position: relative;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-family: monospace; font-weight: 600;
+    letter-spacing: .05em; color: white; text-transform: uppercase;
+    white-space: nowrap; overflow: hidden;
+  }
+  .bar-direction { background: #ef4444; }
+  .bar-commercial { background: #f97316; }
+  .bar-ops { background: #22c55e; }
+  .bar-jinxa { background: #a855f7; }
+  .bar-tom { background: #7c3aed; }
+  .bar-all { background: linear-gradient(90deg, #a855f7, #f97316, #22c55e); }
+  .bar-done { opacity: .4; }
+
+  /* Bars spanning multiple cells */
+  .bar-span {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    left: 4px; right: 4px; height: 22px; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-family: monospace; font-weight: 600;
+    color: white; text-transform: uppercase; letter-spacing: .05em;
+  }
+
+  /* Legend */
+  .legend { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 32px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+  .legend-label { font-size: 11px; color: #64748b; font-family: monospace; }
+
+  /* Milestones section */
+  .milestones { margin-bottom: 40px; }
+  .milestones h2 {
+    font-size: 16px; font-weight: 400; margin-bottom: 16px;
+    padding-bottom: 10px; border-bottom: 1px solid #1e293b;
+  }
+  .milestone-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;
+  }
+  .milestone {
+    background: #111827; border: 1px solid #1e293b; border-radius: 8px;
+    padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start;
+  }
+  .milestone-icon {
+    width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .milestone-content { flex: 1; }
+  .milestone-date {
+    font-size: 10px; font-family: monospace; color: #475569;
+    text-transform: uppercase; letter-spacing: .1em; margin-bottom: 2px;
+  }
+  .milestone-title { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+  .milestone-who { font-size: 11px; color: #475569; }
+
+  /* RACI */
+  .raci { margin-bottom: 40px; }
+  .raci h2 {
+    font-size: 16px; font-weight: 400; margin-bottom: 16px;
+    padding-bottom: 10px; border-bottom: 1px solid #1e293b;
+  }
+  .raci-table {
+    width: 100%; border-collapse: collapse; font-size: 12px;
+    overflow-x: auto; display: block;
+  }
+  .raci-table thead { position: sticky; top: 0; }
+  .raci-table th {
+    background: #111827; color: #475569; font-family: monospace;
+    font-size: 10px; text-transform: uppercase; letter-spacing: .08em;
+    padding: 10px 8px; text-align: center; border-bottom: 1px solid #1e293b;
+    white-space: nowrap;
+  }
+  .raci-table th:first-child { text-align: left; min-width: 200px; }
+  .raci-table td {
+    padding: 10px 8px; text-align: center;
+    border-bottom: 1px solid #1e293b; font-family: monospace;
+  }
+  .raci-table td:first-child {
+    text-align: left; font-family: Georgia, serif; font-size: 13px;
+  }
+  .raci-table tr:hover td { background: #111827; }
+  .r { color: #ef4444; font-weight: 700; }
+  .a { color: #f97316; font-weight: 700; }
+  .c { color: #a855f7; font-weight: 700; }
+  .i { color: #475569; }
+
+  /* Governance */
+  .governance { margin-bottom: 40px; }
+  .governance h2 {
+    font-size: 16px; font-weight: 400; margin-bottom: 16px;
+    padding-bottom: 10px; border-bottom: 1px solid #1e293b;
+  }
+  .gov-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+  .gov-card {
+    background: #111827; border: 1px solid #1e293b; border-radius: 8px;
+    padding: 16px;
+  }
+  .gov-title { font-size: 14px; font-weight: 500; margin-bottom: 8px; }
+  .gov-detail { font-size: 12px; color: #64748b; line-height: 1.6; }
+  .gov-freq {
+    font-size: 10px; font-family: monospace; color: #a855f7;
+    text-transform: uppercase; letter-spacing: .1em; margin-bottom: 6px;
+  }
+
+  /* Footer */
+  .footer {
+    border-top: 1px solid #1e293b; padding-top: 20px;
+    display: flex; justify-content: space-between;
+    align-items: center; flex-wrap: wrap; gap: 8px;
+  }
+  .footer-brand { font-size: 11px; color: #334155; font-family: monospace; }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .gantt { min-width: 1200px; }
+  }
+</style>
+</head>
+<body>
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge"><div class="dot"></div> Planning opérationnel · Artistic Palace</div>
+  <h1>Implémentation HubSpot CRM</h1>
+  <p class="hero-sub">Studio de Musique — 15 espaces + 1 espace événementiel<br>Planning de mise en œuvre Mars → Juin 2026</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="hero-stat-num">18</div><div class="hero-stat-label">Semaines</div></div>
+    <div class="hero-stat"><div class="hero-stat-num">10</div><div class="hero-stat-label">Phases</div></div>
+    <div class="hero-stat"><div class="hero-stat-num">5</div><div class="hero-stat-label">Intervenants</div></div>
+    <div class="hero-stat"><div class="hero-stat-num">6</div><div class="hero-stat-label">Jalons</div></div>
+  </div>
+  <a href="#gantt" class="hero-cta">Voir le planning ↓</a>
+  <div style="margin-top:12px"><a href="index.html" style="font-size:12px;font-family:monospace;color:#64748b;text-decoration:none;border-bottom:1px solid #334155">← Retour au backlog des tâches</a></div>
+</div>
+
+<div class="container">
+
+  <!-- TEAM -->
+  <div class="section fade-in">
+  <div class="section-title"><span class="section-num">01</span> Équipe projet</div>
+  <div class="team">
+    <div class="team-card" style="border-left-color:#ef4444">
+      <div class="team-role" style="color:#ef4444">Direction</div>
+      <div class="team-name">Pierre Guimard</div>
+      <div class="team-org">CEO — Artistic Palace</div>
+    </div>
+    <div class="team-card" style="border-left-color:#f97316">
+      <div class="team-role" style="color:#f97316">Développement Commercial</div>
+      <div class="team-name">Mahaut Dufour</div>
+      <div class="team-org">Resp. Commercial — Artistic Palace</div>
+    </div>
+    <div class="team-card" style="border-left-color:#22c55e">
+      <div class="team-role" style="color:#22c55e">Suivi Opérationnel</div>
+      <div class="team-name">Stéphane Ichaï</div>
+      <div class="team-org">Resp. Opérationnel — Artistic Palace</div>
+    </div>
+    <div class="team-card" style="border-left-color:#a855f7">
+      <div class="team-role" style="color:#a855f7">Consultante CRM / Data</div>
+      <div class="team-name">Leslie Guilbert</div>
+      <div class="team-org">Jinxa EURL</div>
+    </div>
+    <div class="team-card" style="border-left-color:#7c3aed">
+      <div class="team-role" style="color:#7c3aed">Développement Planning</div>
+      <div class="team-name">Tom Randeau</div>
+      <div class="team-org">Sous-traitant Jinxa</div>
+    </div>
+  </div>
+
+  </div>
+
+  <!-- GANTT SECTION -->
+  <div id="gantt" class="section fade-in">
+  <div class="section-title"><span class="section-num">02</span> Planning Gantt — 18 semaines</div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div><span class="legend-label">Pierre — Direction</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div><span class="legend-label">Mahaut — Commercial</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div><span class="legend-label">Stéphane — Ops</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div><span class="legend-label">Leslie — Jinxa</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div><span class="legend-label">Tom — Planning</span></div>
+  </div>
+
+  <!-- GANTT -->
+  <div class="gantt-wrapper">
+    <div class="gantt">
+      <!-- Header: months -->
+      <div class="gantt-header" style="background:#0a0f1a"></div>
+      <div class="gantt-header month-label" style="grid-column: span 4">Mars</div>
+      <div class="gantt-header month-label" style="grid-column: span 5">Avril</div>
+      <div class="gantt-header month-label" style="grid-column: span 4">Mai</div>
+      <div class="gantt-header month-label" style="grid-column: span 5">Juin</div>
+
+      <!-- Header: weeks -->
+      <div class="gantt-header" style="text-align:left;padding-left:14px">Phase / Semaine</div>
+      <div class="gantt-header">S1</div>
+      <div class="gantt-header">S2</div>
+      <div class="gantt-header">S3</div>
+      <div class="gantt-header">S4</div>
+      <div class="gantt-header">S5</div>
+      <div class="gantt-header">S6</div>
+      <div class="gantt-header">S7</div>
+      <div class="gantt-header">S8</div>
+      <div class="gantt-header">S9</div>
+      <div class="gantt-header">S10</div>
+      <div class="gantt-header">S11</div>
+      <div class="gantt-header">S12</div>
+      <div class="gantt-header">S13</div>
+      <div class="gantt-header">S14</div>
+      <div class="gantt-header">S15</div>
+      <div class="gantt-header">S16</div>
+      <div class="gantt-header">S17</div>
+      <div class="gantt-header">S18</div>
+
+      <!-- Phase 3 — Cadrage -->
+      <div class="gantt-phase-label">
+        <span class="phase-num">P3</span> Cadrage &amp; Priorisation
+      </div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"></div>
+      <div class="gantt-cell"></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+
+      <!-- Phase 4 — Cahier des charges -->
+      <div class="gantt-phase-label">
+        <span class="phase-num">P4</span> Cahier des charges
+      </div>
+      <div class="gantt-cell"><div class="bar bar-direction">PG</div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"><div class="bar bar-commercial">MD</div></div>
+      <div class="gantt-cell"><div class="bar bar-ops">SI</div></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+
+      <!-- Phase 5 — Paramétrage CRM -->
+      <div class="gantt-phase-label">
+        <span class="phase-num">P5</span> Paramétrage HubSpot CRM
+      </div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+
+      <!-- Phase 5b — Planning Studio Planner -->
+      <div class="gantt-phase-label">
+        <span class="phase-num">P5</span> Planning Opérationnel
+      </div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      <div class="gantt-cell"><div class="bar bar-tom">TR</div></div>
+      <div class="gantt-cell"><div class="bar bar-tom">TR</div></div>
+      <div class="gantt-cell"><div class="bar bar-tom">TR</div></div>
+      <div class="gantt-cell"><div class="bar bar-tom">TR</div></div>
+      <div class="gantt-cell"><div class="bar bar-ops">SI</div></div>
+      <div class="gantt-cell"><div class="bar bar-ops">SI</div></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+
+      <!-- Phase 5c — Workflows -->
+      <div class="gantt-phase-label">
+        <span class="phase-num">P5</span> Workflows &amp; Automatisations
+      </div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"><div class="bar bar-commercial">MD</div></div>
+      <div class="gantt-cell"></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+
+      <!-- Phase 6 — Migration -->
+      <div class="gantt-phase-label">
+        <span class="phase-num">P6</span> Migration des données
+      </div>
+      <div class="gantt-cell"><div class="bar bar-commercial">MD</div></div>
+      <div class="gantt-cell"><div class="bar bar-commercial">MD</div></div>
+      <div class="gantt-cell"><div class="bar bar-commercial">MD</div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"><div class="bar bar-commercial">MD</div></div>
+      <div class="gantt-cell"><div class="bar bar-ops">SI</div></div>
+      <div class="gantt-cell"></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+
+      <!-- Phase Omnicanal -->
+      <div class="gantt-phase-label">
+        <span class="phase-num">OM</span> Gestion Omnicanale
+      </div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"><div class="bar bar-ops">SI</div></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+
+      <!-- Phase Inventaire -->
+      <div class="gantt-phase-label">
+        <span class="phase-num">INV</span> Inventaire équipements
+      </div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      <div class="gantt-cell"></div>
+      <div class="gantt-cell"><div class="bar bar-ops">SI</div></div>
+      <div class="gantt-cell"><div class="bar bar-ops">SI</div></div>
+      <div class="gantt-cell"><div class="bar bar-ops">SI</div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+
+      <!-- Phase 7 — Tests -->
+      <div class="gantt-phase-label">
+        <span class="phase-num">P7</span> Tests &amp; Recette
+      </div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      <div class="gantt-cell"></div>
+      <div class="gantt-cell"><div class="bar bar-commercial">MD</div></div>
+      <div class="gantt-cell"><div class="bar bar-ops">SI</div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+
+      <!-- Phase 8 — Formation -->
+      <div class="gantt-phase-label">
+        <span class="phase-num">P8</span> Formation équipes
+      </div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"><div class="bar bar-commercial">MD</div></div>
+      <div class="gantt-cell"><div class="bar bar-ops">SI</div></div>
+      <div class="gantt-cell"><div class="bar bar-direction">PG</div></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+
+      <!-- Phase 9 — Déploiement -->
+      <div class="gantt-phase-label">
+        <span class="phase-num">P9</span> Déploiement &amp; Go-Live
+      </div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      <div class="gantt-cell"><div class="bar bar-direction">PG</div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div>
+
+      <!-- Phase 10 — Suivi -->
+      <div class="gantt-phase-label">
+        <span class="phase-num">P10</span> Suivi post-déploiement
+      </div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
+      <div class="gantt-cell"></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+    </div>
+  </div>
+
+  </div>
+
+  <!-- MILESTONES -->
+  <div class="section fade-in">
+    <div class="section-title"><span class="section-num">03</span> Jalons clés</div>
+    <div class="milestone-grid">
+      <div class="milestone">
+        <div class="milestone-icon" style="background:#ef444422;color:#ef4444">◆</div>
+        <div class="milestone-content">
+          <div class="milestone-date">Fin Mars — S4</div>
+          <div class="milestone-title">Cahier des charges validé</div>
+          <div class="milestone-who">Pierre Guimard valide · Leslie livre</div>
+        </div>
+      </div>
+      <div class="milestone">
+        <div class="milestone-icon" style="background:#a855f722;color:#a855f7">◆</div>
+        <div class="milestone-content">
+          <div class="milestone-date">Fin Avril — S8</div>
+          <div class="milestone-title">CRM paramétré + données migrées</div>
+          <div class="milestone-who">Leslie + Mahaut valident les données</div>
+        </div>
+      </div>
+      <div class="milestone">
+        <div class="milestone-icon" style="background:#22c55e22;color:#22c55e">◆</div>
+        <div class="milestone-content">
+          <div class="milestone-date">Mi-Mai — S10</div>
+          <div class="milestone-title">Omnicanal opérationnel</div>
+          <div class="milestone-who">Email + WhatsApp + Aircall connectés</div>
+        </div>
+      </div>
+      <div class="milestone">
+        <div class="milestone-icon" style="background:#f9731622;color:#f97316">◆</div>
+        <div class="milestone-content">
+          <div class="milestone-date">Fin Mai — S14</div>
+          <div class="milestone-title">Go / No-Go</div>
+          <div class="milestone-who">Comité de pilotage · Décision Pierre</div>
+        </div>
+      </div>
+      <div class="milestone">
+        <div class="milestone-icon" style="background:#a855f722;color:#a855f7">◆</div>
+        <div class="milestone-content">
+          <div class="milestone-date">Début Juin — S15</div>
+          <div class="milestone-title">Mise en production</div>
+          <div class="milestone-who">Toute l'équipe · Support Leslie J+15</div>
+        </div>
+      </div>
+      <div class="milestone">
+        <div class="milestone-icon" style="background:#7c3aed22;color:#7c3aed">◆</div>
+        <div class="milestone-content">
+          <div class="milestone-date">Fin Juin — S18</div>
+          <div class="milestone-title">Fin de phase projet</div>
+          <div class="milestone-who">Bascule vers suivi continu (option)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div>
+
+  <!-- RACI -->
+  <div class="section fade-in">
+    <div class="section-title"><span class="section-num">04</span> Matrice RACI</div>
+    <div style="overflow-x:auto">
+    <table class="raci-table">
+      <thead>
+        <tr>
+          <th style="text-align:left">Phase</th>
+          <th>Pierre<br><span style="font-weight:400;color:#ef4444">Direction</span></th>
+          <th>Mahaut<br><span style="font-weight:400;color:#f97316">Commercial</span></th>
+          <th>Stéphane<br><span style="font-weight:400;color:#22c55e">Ops</span></th>
+          <th>Leslie<br><span style="font-weight:400;color:#a855f7">Jinxa</span></th>
+          <th>Tom<br><span style="font-weight:400;color:#7c3aed">Planning</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>P3 · Cadrage &amp; Priorisation</td>
+          <td class="a">A</td><td class="c">C</td><td class="c">C</td><td class="r">R</td><td class="i">I</td>
+        </tr>
+        <tr>
+          <td>P4 · Cahier des charges</td>
+          <td class="a">A</td><td class="r">R</td><td class="r">R</td><td class="r">R</td><td class="i">I</td>
+        </tr>
+        <tr>
+          <td>P5 · Paramétrage CRM</td>
+          <td class="i">I</td><td class="c">C</td><td class="c">C</td><td class="r">R</td><td class="i">I</td>
+        </tr>
+        <tr>
+          <td>P5 · Planning Opérationnel</td>
+          <td class="i">I</td><td class="i">I</td><td class="a">A</td><td class="c">C</td><td class="r">R</td>
+        </tr>
+        <tr>
+          <td>P5 · Workflows</td>
+          <td class="i">I</td><td class="c">C</td><td class="c">C</td><td class="r">R</td><td class="i">I</td>
+        </tr>
+        <tr>
+          <td>P6 · Migration des données</td>
+          <td class="i">I</td><td class="r">R</td><td class="c">C</td><td class="r">R</td><td class="i">I</td>
+        </tr>
+        <tr>
+          <td>Omnicanal (Email/WA/Aircall)</td>
+          <td class="i">I</td><td class="c">C</td><td class="a">A</td><td class="r">R</td><td class="i">I</td>
+        </tr>
+        <tr>
+          <td>Inventaire équipements</td>
+          <td class="i">I</td><td class="i">I</td><td class="r">R</td><td class="c">C</td><td class="i">I</td>
+        </tr>
+        <tr>
+          <td>P7 · Tests &amp; Recette</td>
+          <td class="i">I</td><td class="r">R</td><td class="r">R</td><td class="r">R</td><td class="c">C</td>
+        </tr>
+        <tr>
+          <td>P8 · Formation</td>
+          <td class="c">C</td><td class="r">R</td><td class="r">R</td><td class="r">R</td><td class="i">I</td>
+        </tr>
+        <tr>
+          <td>P9 · Déploiement</td>
+          <td class="a">A</td><td class="c">C</td><td class="c">C</td><td class="r">R</td><td class="c">C</td>
+        </tr>
+        <tr>
+          <td>P10 · Suivi post-déploiement</td>
+          <td class="a">A</td><td class="c">C</td><td class="c">C</td><td class="r">R</td><td class="i">I</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:20px;flex-wrap:wrap">
+      <span style="font-size:11px;font-family:monospace"><span class="r">R</span> <span style="color:#64748b">= Réalise</span></span>
+      <span style="font-size:11px;font-family:monospace"><span class="a">A</span> <span style="color:#64748b">= Approuve</span></span>
+      <span style="font-size:11px;font-family:monospace"><span class="c">C</span> <span style="color:#64748b">= Consulté</span></span>
+      <span style="font-size:11px;font-family:monospace"><span class="i">I</span> <span style="color:#64748b">= Informé</span></span>
+    </div>
+  </div>
+
+  </div>
+
+  <!-- GOVERNANCE -->
+  <div class="section fade-in">
+    <div class="section-title"><span class="section-num">05</span> Gouvernance projet</div>
+    <div class="gov-grid">
+      <div class="gov-card">
+        <div class="gov-freq">Bimensuel</div>
+        <div class="gov-title">Comité de pilotage</div>
+        <div class="gov-detail">
+          Pierre Guimard + Leslie Guilbert<br>
+          Validation stratégique, arbitrages budget, go/no-go
+        </div>
+      </div>
+      <div class="gov-card">
+        <div class="gov-freq">Hebdomadaire</div>
+        <div class="gov-title">Comité projet</div>
+        <div class="gov-detail">
+          Mahaut + Stéphane + Leslie + Tom<br>
+          Suivi avancement, risques, décisions opérationnelles
+        </div>
+      </div>
+      <div class="gov-card">
+        <div class="gov-freq">Selon phase</div>
+        <div class="gov-title">Points équipe terrain</div>
+        <div class="gov-detail">
+          Utilisateurs clés + Leslie + Tom<br>
+          Ateliers métier, tests, retours terrain
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-brand">JINXA EURL · Artistic Palace · Planning Opérationnel · Mars—Juin 2026</span>
+    <span class="footer-brand">Document confidentiel</span>
+  </div>
+
+</div>
+
+<script>
+  // Scroll fade-in animation
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
