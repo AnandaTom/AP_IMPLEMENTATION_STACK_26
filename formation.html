@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<title>Plannings de Formation CRM – Studio Multi-sites</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0c0e;
+    --surface: #141416;
+    --surface2: #1c1c20;
+    --border: #2a2a30;
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --teal: #3ecfb8;
+    --teal-dim: #1e7a6e;
+    --text: #e8e6e0;
+    --muted: #7a7870;
+    --tag-bg: #1e1e24;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 64px 60px 40px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -120px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-label {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 4vw, 46px);
+    font-weight: 700;
+    line-height: 1.15;
+    color: #fff;
+    max-width: 700px;
+  }
+  header h1 span { color: var(--gold); }
+  .header-meta {
+    margin-top: 20px;
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .header-meta span {
+    font-size: 13px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); display: inline-block; }
+
+  .nav-back {
+    margin-top: 20px;
+  }
+  .nav-back a {
+    font-size: 12px; font-family: 'DM Sans', sans-serif; color: var(--gold);
+    text-decoration: none; border: 1px solid rgba(201,168,76,0.3);
+    padding: 6px 14px; border-radius: 2px; transition: all .15s;
+    letter-spacing: 0.5px;
+  }
+  .nav-back a:hover { background: rgba(201,168,76,0.08); border-color: var(--gold); }
+
+  /* ── LAYOUT ── */
+  .plans-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    min-height: calc(100vh - 200px);
+  }
+
+  .plan {
+    padding: 48px 52px;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+  .plan:last-child { border-right: none; }
+
+  .plan-bizdev::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light), transparent);
+  }
+  .plan-ops::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--teal), #6be8d5, transparent);
+  }
+
+  /* ── PLAN HEADER ── */
+  .plan-role {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .plan-bizdev .plan-role { color: var(--gold); }
+  .plan-ops .plan-role { color: var(--teal); }
+
+  .plan-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(20px, 2.5vw, 28px);
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+  .plan-subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 28px;
+  }
+
+  .plan-summary {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 36px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--border);
+  }
+  .pill {
+    padding: 5px 14px;
+    border-radius: 2px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+  .plan-bizdev .pill { background: rgba(201,168,76,0.12); color: var(--gold-light); }
+  .plan-ops .pill { background: rgba(62,207,184,0.1); color: var(--teal); }
+
+  /* ── MODULES ── */
+  .modules { display: flex; flex-direction: column; gap: 18px; }
+
+  .module {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .module:hover { border-color: #3a3a44; }
+
+  .module-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .module-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 13px;
+    font-weight: 600;
+    min-width: 22px;
+    opacity: 0.45;
+  }
+  .plan-bizdev .module-num { color: var(--gold); }
+  .plan-ops .module-num { color: var(--teal); }
+
+  .module-info { flex: 1; }
+  .module-name {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .module-meta {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .module-duration {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+  .plan-bizdev .module-duration { background: rgba(201,168,76,0.1); color: var(--gold); }
+  .plan-ops .module-duration { background: rgba(62,207,184,0.08); color: var(--teal); }
+
+  .chevron {
+    font-size: 12px;
+    color: var(--muted);
+    transition: transform 0.25s;
+    margin-left: 4px;
+  }
+  .module.open .chevron { transform: rotate(180deg); }
+
+  .module-body {
+    display: none;
+    padding: 0 18px 16px 54px;
+    animation: fadeIn 0.2s ease;
+  }
+  .module.open .module-body { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .module-body ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .module-body li {
+    font-size: 12.5px;
+    color: #aeacaa;
+    padding-left: 14px;
+    position: relative;
+    line-height: 1.5;
+  }
+  .module-body li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--border);
+    font-size: 11px;
+  }
+
+  .module-objective {
+    margin-top: 10px;
+    padding: 8px 12px;
+    border-radius: 2px;
+    font-size: 11.5px;
+    line-height: 1.5;
+    font-style: italic;
+  }
+  .plan-bizdev .module-objective {
+    background: rgba(201,168,76,0.06);
+    color: rgba(201,168,76,0.8);
+    border-left: 2px solid rgba(201,168,76,0.3);
+  }
+  .plan-ops .module-objective {
+    background: rgba(62,207,184,0.05);
+    color: rgba(62,207,184,0.75);
+    border-left: 2px solid rgba(62,207,184,0.25);
+  }
+
+  .module-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .tag {
+    font-size: 10px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 2px;
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  /* ── TOTAL BAR ── */
+  .plan-total {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .plan-total-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .plan-total-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .plan-bizdev .plan-total-value { color: var(--gold); }
+  .plan-ops .plan-total-value { color: var(--teal); }
+
+  .plan-total-breakdown {
+    text-align: right;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .timeline-bar {
+    margin-top: 14px;
+    display: flex;
+    gap: 3px;
+    height: 5px;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .timeline-seg {
+    border-radius: 2px;
+    height: 100%;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 28px 60px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  footer p { font-size: 11.5px; color: var(--muted); }
+  .footer-brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 13px;
+    color: var(--gold);
+    letter-spacing: 1px;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .plans-container { grid-template-columns: 1fr; }
+    .plan { border-right: none; border-bottom: 1px solid var(--border); padding: 36px 28px; }
+    header { padding: 40px 28px 32px; }
+    footer { padding: 24px 28px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-label">Formation CRM — HubSpot Enterprise</div>
+  <h1>Plannings de formation<br><span>Studio multi-sites</span></h1>
+  <div class="header-meta">
+    <span><span class="dot"></span> Artistic Palace</span>
+    <span><span class="dot"></span> Préparé par Leslie Guilbert – JINXA</span>
+    <span><span class="dot"></span> Mars 2026</span>
+  </div>
+  <div class="nav-back">
+    <a href="index.html">← Retour au backlog</a>
+    <a href="planning.html" style="margin-left:8px">→ Planning opérationnel</a>
+  </div>
+</header>
+
+<div class="plans-container">
+
+  <!-- ═══════════════ PLAN 1 — BIZDEV ÉVÉNEMENTIEL ═══════════════ -->
+  <div class="plan plan-bizdev">
+    <div class="plan-role">Profil 01</div>
+    <div class="plan-title">Responsable<br>Business Development</div>
+    <div class="plan-subtitle">Spécialisation Événementiel & Partenariats</div>
+
+    <div class="plan-summary">
+      <span class="pill">6 modules</span>
+      <span class="pill">7 jours</span>
+      <span class="pill">Deals & Events</span>
+      <span class="pill">Reporting stratégique</span>
+    </div>
+
+    <div class="modules">
+
+      <div class="module open" onclick="toggle(this)">
+        <div class="module-header">
+          <span class="module-num">01</span>
+          <div class="module-info">
+            <div class="module-name">Prise en main HubSpot & architecture données</div>
+            <div class="module-meta">Navigation · Contacts · Entreprises</div>
+          </div>
+          <span class="module-duration">1 jour</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="module-body">
+          <ul>
+            <li>Navigation dans l'interface HubSpot : menus, raccourcis, vues personnalisées</li>
+            <li>Comprendre la logique des objets : Contact, Entreprise, Deal, Custom Object</li>
+            <li>Création et recherche de contacts (artistes, managers, médias, agences)</li>
+            <li>Associations Contact → Entreprise → Deal : logique relationnelle</li>
+            <li>Champs clés à renseigner : lifecycle stage, source acquisition, consentement RGPD</li>
+            <li>Segmentation par genre musical, type de contact, niveau de partenariat</li>
+          </ul>
+          <div class="module-objective">✦ À l'issue : naviguer dans la base contacts, créer / qualifier un contact, comprendre les associations entre objets.</div>
+          <div class="module-tags"><span class="tag">HubSpot CRM</span><span class="tag">Contacts</span><span class="tag">RGPD</span></div>
+        </div>
+      </div>
+
+      <div class="module" onclick="toggle(this)">
+        <div class="module-header">
+          <span class="module-num">02</span>
+          <div class="module-info">
+            <div class="module-name">Pipeline Deals & Partenariats Majors</div>
+            <div class="module-meta">Universal · Sony · Warner · Labels indé</div>
+          </div>
+          <span class="module-duration">2 jours</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="module-body">
+          <ul>
+            <li>Créer un deal : nom projet, contact artiste, interlocuteur label / A&R</li>
+            <li>Comprendre les stages du pipeline : Prospection → Négociation → Validation juridique → Signé</li>
+            <li>Renseigner l'enveloppe budgétaire signée (HT) et suivre la consommation progressive</li>
+            <li>Utiliser le champ probabilité de closing et le revenue weighted calculé automatiquement</li>
+            <li>Joindre contrat signé et bon de commande (PO) dans le deal</li>
+            <li>Historique des modifications de deal : audit trail et versioning</li>
+            <li>Workflows de notification lors d'un changement de stage ou d'un dépassement d'enveloppe</li>
+            <li>Vue pipeline : Kanban vs liste, filtres par label / artiste / période</li>
+          </ul>
+          <div class="module-objective">✦ À l'issue : créer et piloter un deal major de A à Z, suivre l'enveloppe en temps réel, déclencher les workflows de validation.</div>
+          <div class="module-tags"><span class="tag">Deals</span><span class="tag">Pipeline</span><span class="tag">Enveloppes</span><span class="tag">Workflows</span></div>
+        </div>
+      </div>
+
+      <div class="module" onclick="toggle(this)">
+        <div class="module-header">
+          <span class="module-num">03</span>
+          <div class="module-info">
+            <div class="module-name">Gestion de l'Espace Événementiel</div>
+            <div class="module-meta">Showcases · Listening parties · Masterclasses</div>
+          </div>
+          <span class="module-duration">1,5 jour</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="module-body">
+          <ul>
+            <li>Accéder et créer un Événement (Custom Object) depuis un Booking existant</li>
+            <li>Types d'événements : showcase, listening_party, masterclass, lancement_album, corporate, livestream</li>
+            <li>Renseigner la jauge prévue / réelle, le budget HT, les recettes (billetterie, sponsors)</li>
+            <li>Ajouter les prestataires externes : traiteur, sécurité, technique son</li>
+            <li>Lier les pièces jointes : rider technique, plan de salle, lien billetterie</li>
+            <li>Suivre les statuts d'événement : planifié → confirmé → en cours → terminé</li>
+            <li>Renseigner les retombées médias et la satisfaction organisateur post-event</li>
+            <li>Calculer la marge nette événement (recettes – budget) depuis le dashboard</li>
+          </ul>
+          <div class="module-objective">✦ À l'issue : créer et suivre un événement complet du brief à la clôture, avec bilan financier et satisfaction.</div>
+          <div class="module-tags"><span class="tag">Événements</span><span class="tag">Custom Object</span><span class="tag">Billetterie</span></div>
+        </div>
+      </div>
+
+      <div class="module" onclick="toggle(this)">
+        <div class="module-header">
+          <span class="module-num">04</span>
+          <div class="module-info">
+            <div class="module-name">Prospection & Qualification Commerciale</div>
+            <div class="module-meta">Lead scoring · Séquences · Relances</div>
+          </div>
+          <span class="module-duration">1 jour</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="module-body">
+          <ul>
+            <li>Utiliser le lead score (0–100) pour prioriser les contacts à fort potentiel événementiel</li>
+            <li>Lifecycle stages : comprendre lead → prospect → client → client_vip → ambassadeur</li>
+            <li>Créer des séquences d'emails de prospection (templates + personnalisation)</li>
+            <li>Lier un contact prospect à une opportunité d'événement dès la prise de contact</li>
+            <li>Gérer les relances via les tâches HubSpot et les rappels automatiques</li>
+            <li>Segmenter la base pour des campagnes ciblées (labels, agences événementielles, marques)</li>
+          </ul>
+          <div class="module-objective">✦ À l'issue : construire et animer un pipeline de prospection événementielle, avec relances automatisées et scoring actif.</div>
+          <div class="module-tags"><span class="tag">Prospection</span><span class="tag">Lead Scoring</span><span class="tag">Séquences</span></div>
+        </div>
+      </div>
+
+      <div class="module" onclick="toggle(this)">
+        <div class="module-header">
+          <span class="module-num">05</span>
+          <div class="module-info">
+            <div class="module-name">Reporting Stratégique & Dashboards</div>
+            <div class="module-meta">KPI pipeline · CA événementiel · Forecasting</div>
+          </div>
+          <span class="module-duration">1 jour</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="module-body">
+          <ul>
+            <li>Lire et interpréter le dashboard Pipeline pondéré (revenue weighted)</li>
+            <li>Suivre le CA événementiel par type d'event, par mois, par client</li>
+            <li>KPI clés à maîtriser : marge par événement, taux de conversion deals, DSO</li>
+            <li>Créer un rapport personnalisé sur la consommation des enveloppes majors</li>
+            <li>Utiliser les filtres site_id pour une vue multi-sites ou par établissement</li>
+            <li>Exporter les données pour un reporting hebdomadaire en réunion de direction</li>
+          </ul>
+          <div class="module-objective">✦ À l'issue : produire un bilan BizDev hebdomadaire depuis HubSpot sans extraction manuelle.</div>
+          <div class="module-tags"><span class="tag">Dashboards</span><span class="tag">Forecasting</span><span class="tag">Multi-sites</span></div>
+        </div>
+      </div>
+
+      <div class="module" onclick="toggle(this)">
+        <div class="module-header">
+          <span class="module-num">06</span>
+          <div class="module-info">
+            <div class="module-name">Automatisations & Bonnes pratiques</div>
+            <div class="module-meta">Workflows · Notifications · Data quality</div>
+          </div>
+          <span class="module-duration">0,5 jour</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="module-body">
+          <ul>
+            <li>Configurer des workflows de bienvenue et de nurturing pour les prospects événementiels</li>
+            <li>Alertes automatiques lors d'un deal bloqué en validation juridique depuis +2 semaines</li>
+            <li>Notification équipe (Slack / email) lors de la signature d'un nouveau deal major</li>
+            <li>Bonnes pratiques de saisie : champs obligatoires, conventions de nommage, doublons</li>
+            <li>Contrôle qualité des données : vues filtrées sur les champs incomplets</li>
+          </ul>
+          <div class="module-objective">✦ À l'issue : maintenir une base de données fiable et recevoir les bonnes alertes au bon moment.</div>
+          <div class="module-tags"><span class="tag">Automations</span><span class="tag">Data quality</span><span class="tag">Slack</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="plan-total">
+      <div>
+        <div class="plan-total-label">Durée totale</div>
+        <div class="plan-total-value">7 j</div>
+        <div class="timeline-bar" style="width:200px;">
+          <div class="timeline-seg" style="background:var(--gold);flex:1;"></div>
+          <div class="timeline-seg" style="background:var(--gold);flex:2;"></div>
+          <div class="timeline-seg" style="background:var(--gold);flex:1.5;"></div>
+          <div class="timeline-seg" style="background:rgba(201,168,76,0.4);flex:1;"></div>
+          <div class="timeline-seg" style="background:rgba(201,168,76,0.3);flex:1;"></div>
+          <div class="timeline-seg" style="background:rgba(201,168,76,0.2);flex:0.5;"></div>
+        </div>
+      </div>
+      <div class="plan-total-breakdown">
+        Prise en main · 1 j<br>
+        Pipeline Deals · 2 j<br>
+        Événementiel · 1,5 j<br>
+        Prospection · 1 j<br>
+        Reporting · 1 j<br>
+        Automations · 0,5 j
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ PLAN 2 — OPÉRATIONNEL + COMMERCIAL ═══════════════ -->
+  <div class="plan plan-ops">
+    <div class="plan-role">Profil 02</div>
+    <div class="plan-title">Chargé(e)<br>Opérationnel(le)</div>
+    <div class="plan-subtitle">Casquette commerciale incluse</div>
+
+    <div class="plan-summary">
+      <span class="pill">7 modules</span>
+      <span class="pill">8 jours</span>
+      <span class="pill">Bookings & Facturation</span>
+      <span class="pill">Planning & RH</span>
+    </div>
+
+    <div class="modules">
+
+      <div class="module open" onclick="toggle(this)">
+        <div class="module-header">
+          <span class="module-num">01</span>
+          <div class="module-info">
+            <div class="module-name">Architecture CRM & navigation opérationnelle</div>
+            <div class="module-meta">Custom Objects · Vue d'ensemble · Recherche</div>
+          </div>
+          <span class="module-duration">0,5 jour</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="module-body">
+          <ul>
+            <li>Comprendre l'architecture : 8 objets de données (Studio, Booking, Staff, Facture…)</li>
+            <li>Navigation rapide entre les objets via les associations</li>
+            <li>Recherche avancée : filtres sur studio_id, site_id, statut</li>
+            <li>Vue liste vs vue kanban : quand utiliser quoi</li>
+            <li>Paramétrer sa page d'accueil HubSpot avec les widgets opérationnels clés</li>
+          </ul>
+          <div class="module-objective">✦ À l'issue : se repérer dans l'outil, accéder rapidement à n'importe quel enregistrement depuis n'importe quel objet.</div>
+          <div class="module-tags"><span class="tag">HubSpot</span><span class="tag">Navigation</span><span class="tag">Custom Objects</span></div>
+        </div>
+      </div>
+
+      <div class="module" onclick="toggle(this)">
+        <div class="module-header">
+          <span class="module-num">02</span>
+          <div class="module-info">
+            <div class="module-name">Gestion des Studios & Équipements</div>
+            <div class="module-meta">Objet Studio · Statuts · Maintenance</div>
+          </div>
+          <span class="module-duration">0,5 jour</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="module-body">
+          <ul>
+            <li>Consulter et mettre à jour la fiche Studio : surface, capacité, DAW disponibles, tarifs HT</li>
+            <li>Gérer les statuts d'espace : actif / maintenance / indisponible / en aménagement</li>
+            <li>Mettre à jour l'objet Équipement : statut opérationnel / en panne, date de prochaine maintenance</li>
+            <li>Comprendre la relation Studio → Booking pour anticiper les conflits</li>
+            <li>Uploader / lier les plans techniques et les galeries photos</li>
+          </ul>
+          <div class="module-objective">✦ À l'issue : maintenir la base Studios à jour, gérer les indisponibilités et déclencher les alertes de maintenance.</div>
+          <div class="module-tags"><span class="tag">Studios</span><span class="tag">Équipements</span><span class="tag">Statuts</span></div>
+        </div>
+      </div>
+
+      <div class="module" onclick="toggle(this)">
+        <div class="module-header">
+          <span class="module-num">03</span>
+          <div class="module-info">
+            <div class="module-name">Réservations & Gestion des Sessions</div>
+            <div class="module-meta">Bookings · Conflits planning · Suivi paiement</div>
+          </div>
+          <span class="module-duration">2 jours</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="module-body">
+          <ul>
+            <li>Créer une réservation : contact client, studio, type de session, dates/heures, durée calculée</li>
+            <li>Assigner un ingénieur son et un assistant depuis l'objet Staff</li>
+            <li>Types de sessions : recording, mixing, mastering, podcast, rehearsal, event</li>
+            <li>Gérer les récurrences : unique / hebdomadaire / mensuel</li>
+            <li>Détecter et résoudre les conflits de planning via les vues filtrées</li>
+            <li>Renseigner le tarif appliqué HT, la remise éventuelle, et le mode de facturation</li>
+            <li>Suivre le statut de paiement : en_attente → acompte → payé → retard → contentieux</li>
+            <li>Gérer les acomptes versés et calculer le solde restant automatiquement</li>
+            <li>Renseigner les besoins techniques et les fichiers de session (liens cloud)</li>
+            <li>Saisir la note de satisfaction et le feedback client post-session</li>
+          </ul>
+          <div class="module-objective">✦ À l'issue : gérer l'intégralité du cycle de vie d'une réservation, de la demande au paiement, sans rupture de saisie.</div>
+          <div class="module-tags"><span class="tag">Bookings</span><span class="tag">Planning</span><span class="tag">Paiements</span><span class="tag">Satisfaction</span></div>
+        </div>
+      </div>
+
+      <div class="module" onclick="toggle(this)">
+        <div class="module-header">
+          <span class="module-num">04</span>
+          <div class="module-info">
+            <div class="module-name">Planning RH & Ingénieurs Son</div>
+            <div class="module-meta">Objet Staff · Créneaux · Taux d'occupation</div>
+          </div>
+          <span class="module-duration">1 jour</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="module-body">
+          <ul>
+            <li>Consulter les fiches Staff : compétences, DAW maîtrisés, genres musicaux, tarifs</li>
+            <li>Gérer les disponibilités récurrentes et les congés planifiés dans HubSpot</li>
+            <li>Créer et modifier des créneaux planning (Slot) : session, maintenance, réunion, indisponible</li>
+            <li>Lecture du taux d'occupation mensuel et de la note moyenne clients par ingénieur</li>
+            <li>Anticiper les pics d'activité et équilibrer la charge entre ingénieurs</li>
+            <li>Gérer les statuts de staff : actif / congé / indisponible</li>
+          </ul>
+          <div class="module-objective">✦ À l'issue : affecter les ressources humaines aux sessions sans conflit, suivre la charge et anticiper les besoins de renfort.</div>
+          <div class="module-tags"><span class="tag">Staff</span><span class="tag">Slots</span><span class="tag">RH</span><span class="tag">Occupation</span></div>
+        </div>
+      </div>
+
+      <div class="module" onclick="toggle(this)">
+        <div class="module-header">
+          <span class="module-num">05</span>
+          <div class="module-info">
+            <div class="module-name">Facturation & Pilotage Financier Opérationnel</div>
+            <div class="module-meta">Factures · Dépenses · KPI quotidiens</div>
+          </div>
+          <span class="module-duration">2 jours</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="module-body">
+          <ul>
+            <li>Créer une facture depuis un Booking ou un Deal : lignes, montant HT, TVA, échéance</li>
+            <li>Statuts facture : brouillon → émise → payée → en retard → avoir</li>
+            <li>Gérer les règlements partiels et calculer le solde dû automatiquement</li>
+            <li>Paramétrer les relances automatiques (nombre, délai, template email)</li>
+            <li>Saisir les dépenses opérationnelles : loyer, charges, freelances, équipements, logiciels</li>
+            <li>Catégoriser et imputer une dépense à un studio spécifique (imputable_studio_id)</li>
+            <li>Lire les KPI financiers opérationnels : CA brut HT, taux d'occupation, panier moyen/session</li>
+            <li>Identifier les factures en retard et déclencher le processus de relance</li>
+            <li>Comprendre le DSO et le taux d'impayés sur le dashboard mensuel</li>
+          </ul>
+          <div class="module-objective">✦ À l'issue : émettre des factures, saisir les dépenses, lire les KPI clés et gérer les impayés en autonomie.</div>
+          <div class="module-tags"><span class="tag">Factures</span><span class="tag">Dépenses</span><span class="tag">KPI</span><span class="tag">Relances</span></div>
+        </div>
+      </div>
+
+      <div class="module" onclick="toggle(this)">
+        <div class="module-header">
+          <span class="module-num">06</span>
+          <div class="module-info">
+            <div class="module-name">Casquette Commerciale : Deals & Suivi Client</div>
+            <div class="module-meta">Deals récurrents · Fidélisation · Upsell</div>
+          </div>
+          <span class="module-duration">1 jour</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="module-body">
+          <ul>
+            <li>Créer un deal depuis une réservation : one_shot, résidence, accord cadre</li>
+            <li>Utiliser le pipeline deals pour les clients récurrents (artistes, petits labels)</li>
+            <li>Mettre à jour le lifecycle stage d'un client après une session réussie</li>
+            <li>Proposer des upsells (sessions supplémentaires, packages) depuis le profil client</li>
+            <li>Gérer les relances commerciales : tâches HubSpot + workflows de réactivation</li>
+            <li>Lire le LTV client (CA cumulé 24 mois) pour prioriser l'attention commerciale</li>
+            <li>Renseigner le score de satisfaction et détecter les risques de churn</li>
+          </ul>
+          <div class="module-objective">✦ À l'issue : animer un portefeuille clients en autonomie, détecter les opportunités de fidélisation et d'upsell.</div>
+          <div class="module-tags"><span class="tag">Deals</span><span class="tag">LTV</span><span class="tag">Fidélisation</span><span class="tag">Upsell</span></div>
+        </div>
+      </div>
+
+      <div class="module" onclick="toggle(this)">
+        <div class="module-header">
+          <span class="module-num">07</span>
+          <div class="module-info">
+            <div class="module-name">Automatisations Opérationnelles</div>
+            <div class="module-meta">Workflows · Alertes · Maintenance préventive</div>
+          </div>
+          <span class="module-duration">1 jour</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="module-body">
+          <ul>
+            <li>Workflow de confirmation automatique de booking (email + SMS client)</li>
+            <li>Alertes de relance paiement à J+7, J+15, J+30 après l'échéance</li>
+            <li>Notification équipe lors d'un no-show ou d'une annulation de dernière minute</li>
+            <li>Alerte maintenance préventive sur équipement (déclenchée par la date prochaine_maintenance)</li>
+            <li>Workflow de demande de satisfaction post-session (envoi automatique 24h après fin)</li>
+            <li>Comprendre les logs de workflows pour diagnostiquer un problème d'exécution</li>
+          </ul>
+          <div class="module-objective">✦ À l'issue : s'appuyer sur les automatisations existantes et en créer de nouvelles sans assistance technique.</div>
+          <div class="module-tags"><span class="tag">Workflows</span><span class="tag">Notifications</span><span class="tag">Maintenance</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="plan-total">
+      <div>
+        <div class="plan-total-label">Durée totale</div>
+        <div class="plan-total-value">8 j</div>
+        <div class="timeline-bar" style="width:200px;">
+          <div class="timeline-seg" style="background:rgba(62,207,184,0.3);flex:0.5;"></div>
+          <div class="timeline-seg" style="background:rgba(62,207,184,0.4);flex:0.5;"></div>
+          <div class="timeline-seg" style="background:var(--teal);flex:2;"></div>
+          <div class="timeline-seg" style="background:rgba(62,207,184,0.7);flex:1;"></div>
+          <div class="timeline-seg" style="background:var(--teal);flex:2;"></div>
+          <div class="timeline-seg" style="background:rgba(62,207,184,0.6);flex:1;"></div>
+          <div class="timeline-seg" style="background:rgba(62,207,184,0.4);flex:1;"></div>
+        </div>
+      </div>
+      <div class="plan-total-breakdown">
+        Architecture · 0,5 j<br>
+        Studios & Équip. · 0,5 j<br>
+        Réservations · 2 j<br>
+        Planning RH · 1 j<br>
+        Facturation · 2 j<br>
+        Commercial · 1 j<br>
+        Automations · 1 j
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>Document confidentiel — Usage interne formation CRM</p>
+  <span class="footer-brand">JINXA × Artistic Palace</span>
+  <p>HubSpot Enterprise · Mars 2026</p>
+</footer>
+
+<script>
+function toggle(el) {
+  el.classList.toggle('open');
+}
+</script>
+
+</body>
+</html>
