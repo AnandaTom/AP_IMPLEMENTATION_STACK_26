@@ -94,7 +94,7 @@
   /* ── LAYOUT ── */
   .plans-container {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 0;
     min-height: calc(100vh - 200px);
   }
@@ -131,6 +131,23 @@
   }
   .plan-bizdev .plan-role { color: var(--gold); }
   .plan-ops .plan-role { color: var(--teal); }
+  .plan-ceo .plan-role { color: #ef4444; }
+  .plan-ceo::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #ef4444, #f87171, transparent);
+  }
+  .plan-ceo .pill { background: rgba(239,68,68,0.1); color: #f87171; }
+  .plan-ceo .module-num { color: #ef4444; }
+  .plan-ceo .module-duration { background: rgba(239,68,68,0.08); color: #ef4444; }
+  .plan-ceo .module-objective {
+    background: rgba(239,68,68,0.05);
+    color: rgba(239,68,68,0.75);
+    border-left: 2px solid rgba(239,68,68,0.25);
+  }
+  .plan-ceo .plan-total-value { color: #ef4444; }
 
   .plan-title {
     font-family: 'Playfair Display', serif;
@@ -387,7 +404,7 @@
 
   <!-- ═══════════════ PLAN 1 — BIZDEV ÉVÉNEMENTIEL ═══════════════ -->
   <div class="plan plan-bizdev">
-    <div class="plan-role">Profil 01</div>
+    <div class="plan-role">Profil 01 — Mahaut Dufour</div>
     <div class="plan-title">Responsable<br>Business Development</div>
     <div class="plan-subtitle">Spécialisation Événementiel & Partenariats</div>
 
@@ -575,8 +592,8 @@
 
   <!-- ═══════════════ PLAN 2 — OPÉRATIONNEL + COMMERCIAL ═══════════════ -->
   <div class="plan plan-ops">
-    <div class="plan-role">Profil 02</div>
-    <div class="plan-title">Chargé(e)<br>Opérationnel(le)</div>
+    <div class="plan-role">Profil 02 — Stéphane Ichaï</div>
+    <div class="plan-title">Chargé<br>Opérationnel</div>
     <div class="plan-subtitle">Casquette commerciale incluse</div>
 
     <div class="plan-summary">
@@ -790,6 +807,159 @@
     </div>
   </div>
 
+  <!-- ═══════════════ PLAN 3 — CEO / DIRECTION ═══════════════ -->
+  <div class="plan plan-ceo">
+    <div class="plan-role">Profil 03 — Pierre Guimard</div>
+    <div class="plan-title">CEO<br>Direction</div>
+    <div class="plan-subtitle">Pilotage stratégique & Dashboards</div>
+
+    <div class="plan-summary">
+      <span class="pill">5 modules</span>
+      <span class="pill">4 jours</span>
+      <span class="pill">KPI & Reporting</span>
+      <span class="pill">Vision 360°</span>
+    </div>
+
+    <div class="modules">
+
+      <div class="module open" onclick="toggle(this)">
+        <div class="module-header">
+          <span class="module-num">01</span>
+          <div class="module-info">
+            <div class="module-name">Vue d'ensemble HubSpot pour la direction</div>
+            <div class="module-meta">Navigation · Vision globale · Objets clés</div>
+          </div>
+          <span class="module-duration">0,5 jour</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="module-body">
+          <ul>
+            <li>Comprendre l'architecture globale : contacts, deals, studios, bookings, événements</li>
+            <li>Naviguer entre les objets pour avoir une vue 360° d'un client ou d'un projet</li>
+            <li>Accéder rapidement aux dashboards depuis la page d'accueil</li>
+            <li>Comprendre les rôles et permissions de chaque profil utilisateur</li>
+          </ul>
+          <div class="module-objective">✦ À l'issue : naviguer dans HubSpot avec une vision dirigeant, comprendre comment les données circulent entre les équipes.</div>
+          <div class="module-tags"><span class="tag">HubSpot</span><span class="tag">Direction</span><span class="tag">Vue globale</span></div>
+        </div>
+      </div>
+
+      <div class="module" onclick="toggle(this)">
+        <div class="module-header">
+          <span class="module-num">02</span>
+          <div class="module-info">
+            <div class="module-name">Dashboards & KPI stratégiques</div>
+            <div class="module-meta">CA · Occupation · Pipeline · Forecasting</div>
+          </div>
+          <span class="module-duration">1 jour</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="module-body">
+          <ul>
+            <li>Lire le dashboard de direction : CA mensuel, taux d'occupation global, pipeline pondéré</li>
+            <li>Suivre le CA par studio, par type de session, par client</li>
+            <li>Comprendre le forecasting : revenue weighted et probabilité de closing</li>
+            <li>KPI clés : taux d'occupation, panier moyen, LTV client, DSO, taux d'impayés</li>
+            <li>Comparer les performances par site (multi-sites) via les filtres site_id</li>
+            <li>Configurer des alertes automatiques sur les KPI critiques</li>
+          </ul>
+          <div class="module-objective">✦ À l'issue : piloter l'activité depuis un seul dashboard, identifier les tendances et prendre des décisions basées sur les données.</div>
+          <div class="module-tags"><span class="tag">Dashboards</span><span class="tag">KPI</span><span class="tag">Forecasting</span><span class="tag">Multi-sites</span></div>
+        </div>
+      </div>
+
+      <div class="module" onclick="toggle(this)">
+        <div class="module-header">
+          <span class="module-num">03</span>
+          <div class="module-info">
+            <div class="module-name">Pilotage commercial & Pipeline Deals</div>
+            <div class="module-meta">Vue Kanban · Deals majors · Enveloppes</div>
+          </div>
+          <span class="module-duration">1 jour</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="module-body">
+          <ul>
+            <li>Superviser le pipeline des deals : vue globale Kanban avec montants et probabilités</li>
+            <li>Suivre les partenariats majors (Universal, Sony, Warner) et la consommation des enveloppes</li>
+            <li>Identifier les deals bloqués et comprendre les raisons (validation juridique, budget)</li>
+            <li>Valider ou arbitrer les deals nécessitant une décision direction</li>
+            <li>Lire le rapport de performance commerciale par période et par commercial</li>
+          </ul>
+          <div class="module-objective">✦ À l'issue : superviser l'activité commerciale, valider les arbitrages et suivre les enveloppes majors en temps réel.</div>
+          <div class="module-tags"><span class="tag">Pipeline</span><span class="tag">Deals</span><span class="tag">Arbitrage</span><span class="tag">Majors</span></div>
+        </div>
+      </div>
+
+      <div class="module" onclick="toggle(this)">
+        <div class="module-header">
+          <span class="module-num">04</span>
+          <div class="module-info">
+            <div class="module-name">Suivi événementiel & Bilan financier</div>
+            <div class="module-meta">ROI événements · Marge · Satisfaction</div>
+          </div>
+          <span class="module-duration">1 jour</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="module-body">
+          <ul>
+            <li>Suivre les événements à venir et leur statut (planifié, confirmé, terminé)</li>
+            <li>Analyser le bilan financier par événement : budget vs recettes, marge nette</li>
+            <li>Comparer les performances par type d'événement (showcase, masterclass, corporate)</li>
+            <li>Lire les retombées médias et la satisfaction organisateur</li>
+            <li>Décider du go/no-go sur les futurs événements basé sur les données historiques</li>
+          </ul>
+          <div class="module-objective">✦ À l'issue : évaluer le ROI de chaque événement et prendre des décisions éclairées pour la programmation future.</div>
+          <div class="module-tags"><span class="tag">Événements</span><span class="tag">ROI</span><span class="tag">Bilan</span><span class="tag">Satisfaction</span></div>
+        </div>
+      </div>
+
+      <div class="module" onclick="toggle(this)">
+        <div class="module-header">
+          <span class="module-num">05</span>
+          <div class="module-info">
+            <div class="module-name">Reporting & Export pour le COMEX</div>
+            <div class="module-meta">Rapports personnalisés · Export · Automatisation</div>
+          </div>
+          <span class="module-duration">0,5 jour</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="module-body">
+          <ul>
+            <li>Créer un rapport personnalisé pour le comité de direction</li>
+            <li>Programmer l'envoi automatique de rapports hebdomadaires par email</li>
+            <li>Exporter les données en CSV/Excel pour des analyses complémentaires</li>
+            <li>Comprendre les limites du reporting HubSpot et les alternatives (BI externe)</li>
+          </ul>
+          <div class="module-objective">✦ À l'issue : produire et recevoir automatiquement les rapports de pilotage sans solliciter l'équipe.</div>
+          <div class="module-tags"><span class="tag">Reporting</span><span class="tag">Export</span><span class="tag">COMEX</span><span class="tag">Automatisation</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="plan-total">
+      <div>
+        <div class="plan-total-label">Durée totale</div>
+        <div class="plan-total-value">4 j</div>
+        <div class="timeline-bar" style="width:200px;">
+          <div class="timeline-seg" style="background:rgba(239,68,68,0.3);flex:0.5;"></div>
+          <div class="timeline-seg" style="background:#ef4444;flex:1;"></div>
+          <div class="timeline-seg" style="background:#ef4444;flex:1;"></div>
+          <div class="timeline-seg" style="background:rgba(239,68,68,0.7);flex:1;"></div>
+          <div class="timeline-seg" style="background:rgba(239,68,68,0.3);flex:0.5;"></div>
+        </div>
+      </div>
+      <div class="plan-total-breakdown">
+        Vue d'ensemble · 0,5 j<br>
+        Dashboards & KPI · 1 j<br>
+        Pipeline Deals · 1 j<br>
+        Événementiel · 1 j<br>
+        Reporting · 0,5 j
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- RESSOURCES -->
@@ -871,7 +1041,7 @@ renderDocs();
     <img src="leslie.jpg" alt="Leslie Guilbert" width="42" height="42" style="border-radius:50%;object-fit:cover;">
     <div>
       <div style="font-family:'Playfair Display',serif;font-size:13px;color:var(--gold);letter-spacing:1px">JINXA EURL</div>
-      <div style="font-size:11px;color:var(--muted);font-family:'DM Sans',sans-serif">Paris 75018 · 06 02 27 66 27 · hello@jinxa.fr</div>
+      <div style="font-size:11px;color:var(--muted);font-family:'DM Sans',sans-serif">Paris 75018 · +33 6 02 27 66 27 · hello@jinxa.fr</div>
     </div>
   </div>
   <p>Document confidentiel · HubSpot Enterprise · Mars 2026</p>
