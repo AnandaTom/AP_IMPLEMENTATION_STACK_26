@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<title>Studio Planner — Suivi Projet</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: #0a0f1a;
+    color: #f1f5f9;
+    font-family: Georgia, 'Times New Roman', serif;
+    padding: 0;
+    min-height: 100vh;
+  }
+  .container { max-width: 860px; margin: 0 auto; padding: 0 24px; }
+
+  /* Hero */
+  .hero {
+    padding: 70px 24px 50px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(180deg, #0a1a2e 0%, #0a0f1a 100%);
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at 50% 0%, #7c3aed15 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #7c3aed15; border: 1px solid #7c3aed33;
+    padding: 6px 16px; border-radius: 20px; margin-bottom: 20px;
+    font-size: 11px; font-family: monospace; color: #7c3aed;
+    text-transform: uppercase; letter-spacing: .15em;
+  }
+  .hero-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #7c3aed; box-shadow: 0 0 8px #7c3aed;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .4; }
+  }
+  .hero h1 {
+    font-size: 32px; font-weight: 400; letter-spacing: -.03em;
+    margin-bottom: 8px;
+  }
+  .hero-sub {
+    color: #64748b; font-size: 15px; margin-bottom: 24px;
+  }
+  .hero-stats {
+    display: flex; justify-content: center; gap: 36px; flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  .hero-stat { text-align: center; }
+  .hero-stat-num { font-size: 32px; font-weight: 300; color: #7c3aed; font-family: monospace; }
+  .hero-stat-label { font-size: 10px; color: #475569; font-family: monospace; text-transform: uppercase; letter-spacing: .1em; }
+
+  /* Progress bar */
+  .progress-wrap {
+    max-width: 400px; margin: 0 auto 28px;
+  }
+  .progress-label {
+    display: flex; justify-content: space-between; font-size: 11px; font-family: monospace;
+    color: #475569; margin-bottom: 6px;
+  }
+  .progress-bar {
+    height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; border-radius: 3px;
+    background: linear-gradient(90deg, #7c3aed, #a855f7);
+    transition: width 1s ease;
+  }
+
+  /* Nav */
+  .nav-links {
+    display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .nav-links a {
+    font-size: 12px; font-family: monospace; text-decoration: none;
+    border: 1px solid #334155; padding: 6px 14px; border-radius: 20px;
+    color: #64748b; transition: all .15s;
+  }
+  .nav-links a:hover { border-color: #64748b; color: #94a3b8; }
+
+  /* Section */
+  .section { padding: 40px 0; }
+  .section-title {
+    font-size: 16px; font-weight: 400; margin-bottom: 20px;
+    padding-bottom: 10px; border-bottom: 1px solid #1e293b;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-num {
+    font-size: 10px; font-family: monospace; color: #7c3aed;
+    background: #7c3aed15; padding: 4px 8px; border-radius: 4px;
+    letter-spacing: .1em;
+  }
+
+  /* Phase card */
+  .phase {
+    background: #111827;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: border-color .2s;
+  }
+  .phase:hover { border-color: #334155; }
+  .phase-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; cursor: pointer;
+  }
+  .phase-status {
+    width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+  }
+  .status-done { background: #22c55e33; color: #22c55e; }
+  .status-next { background: #7c3aed33; color: #7c3aed; }
+  .status-wait { background: #f9731633; color: #f97316; }
+  .status-hold { background: #47556933; color: #64748b; }
+  .phase-info { flex: 1; min-width: 0; }
+  .phase-id {
+    font-size: 10px; font-family: monospace; color: #475569;
+    font-weight: 600; margin-bottom: 2px;
+  }
+  .phase-name { font-size: 14px; font-weight: 500; }
+  .phase.completed .phase-name { color: #64748b; }
+  .phase-date {
+    font-size: 10px; font-family: monospace; color: #334155;
+    white-space: nowrap;
+  }
+  .phase-tests {
+    font-size: 10px; font-family: monospace; padding: 2px 8px;
+    border-radius: 3px; background: #22c55e15; color: #22c55e;
+    white-space: nowrap;
+  }
+  .chevron {
+    color: #475569; font-size: 11px; flex-shrink: 0;
+    transition: transform .2s; user-select: none;
+  }
+  .phase.open .chevron { transform: rotate(180deg); }
+
+  /* Phase detail */
+  .phase-detail {
+    display: none;
+    padding: 0 16px 16px 50px;
+    border-top: 1px solid #1e293b;
+  }
+  .phase.open .phase-detail { display: block; }
+  .phase-desc {
+    color: #94a3b8; font-size: 13px; line-height: 1.7;
+    padding-top: 14px;
+  }
+  .phase-desc ul {
+    list-style: none; margin-top: 8px;
+  }
+  .phase-desc li {
+    padding-left: 16px; position: relative; margin-bottom: 4px;
+  }
+  .phase-desc li::before {
+    content: '→'; position: absolute; left: 0; color: #7c3aed; font-size: 12px;
+  }
+
+  /* Alert box */
+  .alert {
+    background: #1e293b; border: 1px solid #334155; border-radius: 8px;
+    padding: 16px; margin-bottom: 12px;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .alert-icon {
+    font-size: 16px; flex-shrink: 0; margin-top: 2px;
+  }
+  .alert-content { flex: 1; }
+  .alert-title { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+  .alert-text { font-size: 12px; color: #64748b; line-height: 1.5; }
+
+  /* Dev info */
+  .dev-card {
+    background: #111827; border: 1px solid #1e293b; border-radius: 8px;
+    padding: 16px; border-left: 3px solid #7c3aed;
+  }
+  .dev-name { font-size: 15px; font-weight: 500; margin-bottom: 2px; }
+  .dev-role { font-size: 12px; color: #7c3aed; font-family: monospace; margin-bottom: 8px; }
+  .dev-detail { font-size: 12px; color: #64748b; line-height: 1.6; }
+
+  /* Footer */
+  .footer {
+    border-top: 1px solid #1e293b; padding: 20px 0;
+    display: flex; justify-content: space-between;
+    align-items: center; flex-wrap: wrap; gap: 8px;
+  }
+  .footer-brand { font-size: 11px; color: #334155; font-family: monospace; }
+
+  /* Fade in */
+  .fade-in {
+    opacity: 0; transform: translateY(20px);
+    transition: opacity .6s ease, transform .6s ease;
+  }
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge"><div class="hero-dot"></div> Développement par Tom Randeau</div>
+  <h1>Studio Planner</h1>
+  <p class="hero-sub">Application Planning Studio · Artistic Palace<br>Dernière mise à jour : 20 mars 2026</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="hero-stat-num">11</div><div class="hero-stat-label">Terminées</div></div>
+    <div class="hero-stat"><div class="hero-stat-num">21</div><div class="hero-stat-label">Phases totales</div></div>
+    <div class="hero-stat"><div class="hero-stat-num">196</div><div class="hero-stat-label">Tests auto</div></div>
+    <div class="hero-stat"><div class="hero-stat-num">52%</div><div class="hero-stat-label">Avancement</div></div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Progression globale</span><span>11 / 21</span></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:52%"></div></div>
+  </div>
+  <div class="nav-links">
+    <a href="index.html">← Backlog</a>
+    <a href="planning.html">Planning opérationnel</a>
+    <a href="formation.html">Formation CRM</a>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- DEV -->
+  <div class="section fade-in">
+    <div class="section-title"><span class="section-num">DEV</span> Développeur</div>
+    <div class="dev-card">
+      <div class="dev-name">Tom Randeau</div>
+      <div class="dev-role">Sous-traitant Jinxa — Développement Planning Studio</div>
+      <div class="dev-detail">Application de planning opérationnel pour les 16 studios (A–F, 1–9, RDC).<br>Stack : TypeScript, Vercel, Postgres. Tests automatisés à chaque phase.</div>
+    </div>
+  </div>
+
+  <!-- PHASES TERMINÉES -->
+  <div class="section fade-in">
+    <div class="section-title"><span class="section-num">01</span> Phases terminées (11/21)</div>
+
+    <div class="phase completed" onclick="togglePhase(this)">
+      <div class="phase-header">
+        <div class="phase-status status-done">✓</div>
+        <div class="phase-info">
+          <div class="phase-id">PHASES 0–1</div>
+          <div class="phase-name">Structure et configuration</div>
+        </div>
+        <span class="phase-date">Fév. 2026</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="phase-detail">
+        <div class="phase-desc">
+          <ul>
+            <li>16 studios (A–F, 1–9, RDC) configurés</li>
+            <li>Interface calendrier semaine par semaine avec glisser-déposer</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase completed" onclick="togglePhase(this)">
+      <div class="phase-header">
+        <div class="phase-status status-done">✓</div>
+        <div class="phase-info">
+          <div class="phase-id">PHASE 2</div>
+          <div class="phase-name">Backend et anti-double-booking</div>
+        </div>
+        <span class="phase-date">Fév. 2026</span>
+        <span class="phase-tests">33 tests</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="phase-detail">
+        <div class="phase-desc">
+          <ul>
+            <li>Le serveur bloque automatiquement les conflits horaires</li>
+            <li>API opérationnelle : créer, modifier, supprimer, déplacer une session</li>
+            <li>33 tests automatisés en place</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase completed" onclick="togglePhase(this)">
+      <div class="phase-header">
+        <div class="phase-status status-done">✓</div>
+        <div class="phase-info">
+          <div class="phase-id">PHASE 3</div>
+          <div class="phase-name">Connexion sécurisée et cohérence des données</div>
+        </div>
+        <span class="phase-date">Fév. 2026</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="phase-detail">
+        <div class="phase-desc">
+          <ul>
+            <li>Connexion par lien magique par email</li>
+            <li>Données cohérentes entre interface et serveur</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase completed" onclick="togglePhase(this)">
+      <div class="phase-header">
+        <div class="phase-status status-done">✓</div>
+        <div class="phase-info">
+          <div class="phase-id">PHASE 4</div>
+          <div class="phase-name">Données en temps réel</div>
+        </div>
+        <span class="phase-date">25 Fév. 2026</span>
+        <span class="phase-tests">87 tests</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="phase-detail">
+        <div class="phase-desc">
+          <ul>
+            <li>Interface reflète la réalité en direct via l'API</li>
+            <li>Chatbot détecte conflits, affiche statistiques, vérifie disponibilités</li>
+            <li>87 tests automatisés</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase completed" onclick="togglePhase(this)">
+      <div class="phase-header">
+        <div class="phase-status status-done">✓</div>
+        <div class="phase-info">
+          <div class="phase-id">PHASE 5</div>
+          <div class="phase-name">Gestion des utilisateurs et des rôles</div>
+        </div>
+        <span class="phase-date">26 Fév. 2026</span>
+        <span class="phase-tests">126 tests</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="phase-detail">
+        <div class="phase-desc">
+          <ul>
+            <li>Deux rôles : Admin et Ingénieur</li>
+            <li>Page d'administration pour gérer les utilisateurs</li>
+            <li>Système flexible avec fallback sur variables d'environnement</li>
+            <li>Protégé par feature flag · 126 tests</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase completed" onclick="togglePhase(this)">
+      <div class="phase-header">
+        <div class="phase-status status-done">✓</div>
+        <div class="phase-info">
+          <div class="phase-id">PHASE 6</div>
+          <div class="phase-name">Audits qualité</div>
+        </div>
+        <span class="phase-date">27 Fév. 2026</span>
+        <span class="phase-tests">126 tests</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="phase-detail">
+        <div class="phase-desc">
+          <ul>
+            <li>Zéro vulnérabilité npm, TypeScript strict, aucune fuite</li>
+            <li>Messages d'erreur clairs pour les mutations admin</li>
+            <li>Page d'erreur isolée pour /admin</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase completed" onclick="togglePhase(this)">
+      <div class="phase-header">
+        <div class="phase-status status-done">✓</div>
+        <div class="phase-info">
+          <div class="phase-id">PHASE 7</div>
+          <div class="phase-name">Cache et chargement rapide</div>
+        </div>
+        <span class="phase-date">27 Fév. 2026</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="phase-detail">
+        <div class="phase-desc">
+          <ul>
+            <li>Navigation quasi-instantanée grâce au prefetch</li>
+            <li>Planning se rafraîchit toutes les 60 secondes</li>
+            <li>Aucun appel API supplémentaire</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase completed" onclick="togglePhase(this)">
+      <div class="phase-header">
+        <div class="phase-status status-done">✓</div>
+        <div class="phase-info">
+          <div class="phase-id">PHASE 8</div>
+          <div class="phase-name">Modèle de données étendu (statuts, rôles, champs)</div>
+        </div>
+        <span class="phase-date">18 Mars 2026</span>
+        <span class="phase-tests">160 tests</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="phase-detail">
+        <div class="phase-desc">
+          <ul>
+            <li>Nouveaux statuts : « Maison », « No-show », « Option » avec codes couleur</li>
+            <li>Nouveaux rôles : « Booker » et « Consultation »</li>
+            <li>Champs : « Droit à l'image », distinction artiste/payeur</li>
+            <li>160 tests automatisés</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase completed" onclick="togglePhase(this)">
+      <div class="phase-header">
+        <div class="phase-status status-done">✓</div>
+        <div class="phase-info">
+          <div class="phase-id">PHASE 9</div>
+          <div class="phase-name">Sessions multi-jour et horaires 24h</div>
+        </div>
+        <span class="phase-date">18 Mars 2026</span>
+        <span class="phase-tests">160 tests</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="phase-detail">
+        <div class="phase-desc">
+          <ul>
+            <li>Support des sessions dépassant minuit ou sur plusieurs jours</li>
+            <li>Mode « Session sur plusieurs jours » avec dates/heures début et fin</li>
+            <li>Règle par défaut : 6 heures si aucune fin précisée</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase completed" onclick="togglePhase(this)">
+      <div class="phase-header">
+        <div class="phase-status status-done">✓</div>
+        <div class="phase-info">
+          <div class="phase-id">PHASE 10</div>
+          <div class="phase-name">Base de données + historique des modifications</div>
+        </div>
+        <span class="phase-date">20 Mars 2026</span>
+        <span class="phase-tests">173 tests</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="phase-detail">
+        <div class="phase-desc">
+          <ul>
+            <li>Vercel Postgres enregistrant l'historique complet</li>
+            <li>Chaque création, modification, annulation tracée</li>
+            <li>Historique consultable depuis le détail d'une réservation</li>
+            <li>Feature flag FEATURE_AUDIT_TRAIL · 173 tests</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase completed" onclick="togglePhase(this)">
+      <div class="phase-header">
+        <div class="phase-status status-done">✓</div>
+        <div class="phase-info">
+          <div class="phase-id">PHASE 15</div>
+          <div class="phase-name">RDC hybride : loft + cyclorama</div>
+        </div>
+        <span class="phase-date">20 Mars 2026</span>
+        <span class="phase-tests">196 tests</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="phase-detail">
+        <div class="phase-desc">
+          <ul>
+            <li>Studio RDC (150 m²) géré en deux espaces : loft (100 m²) et cyclorama (50 m²)</li>
+            <li>Réservables indépendamment, rétrocompatible</li>
+            <li>Statut cyclorama gérable · Feature flag FEATURE_RDC_HYBRID</li>
+            <li>196 tests automatisés</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROCHAINES PHASES -->
+  <div class="section fade-in">
+    <div class="section-title"><span class="section-num">02</span> Prochaines phases (10 restantes)</div>
+
+    <div class="phase" onclick="togglePhase(this)">
+      <div class="phase-header">
+        <div class="phase-status status-next">→</div>
+        <div class="phase-info">
+          <div class="phase-id">PHASE 11</div>
+          <div class="phase-name">Réservations récurrentes</div>
+        </div>
+        <span class="phase-date">En préparation</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="phase-detail">
+        <div class="phase-desc">
+          <ul>
+            <li>Création d'une seule réservation récurrente (hebdo, bimensuelle, mensuelle)</li>
+            <li>Chaque occurrence modifiable ou annulable individuellement</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase" onclick="togglePhase(this)">
+      <div class="phase-header">
+        <div class="phase-status status-next">→</div>
+        <div class="phase-info">
+          <div class="phase-id">PHASE 12</div>
+          <div class="phase-name">Multi-ressources par session</div>
+        </div>
+        <span class="phase-date">À venir</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="phase-detail">
+        <div class="phase-desc">
+          <ul>
+            <li>Assignation de plusieurs personnes à une session</li>
+            <li>Horaires indépendants par ressource</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase" onclick="togglePhase(this)">
+      <div class="phase-header">
+        <div class="phase-status status-next">→</div>
+        <div class="phase-info">
+          <div class="phase-id">PHASE 13</div>
+          <div class="phase-name">Notifications et messages pré-session</div>
+        </div>
+        <span class="phase-date">À venir</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="phase-detail">
+        <div class="phase-desc">
+          <ul>
+            <li>Email de confirmation automatique</li>
+            <li>Rappel 24h avant la session</li>
+            <li>Message pré-session avec CGV, accès, codes Wi-Fi</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase" onclick="togglePhase(this)">
+      <div class="phase-header">
+        <div class="phase-status status-next">→</div>
+        <div class="phase-info">
+          <div class="phase-id">PHASE 14</div>
+          <div class="phase-name">Système de débrief + pièces jointes</div>
+        </div>
+        <span class="phase-date">À venir</span>
+        <span class="chevron">▼</span>
+      </div>
+    </div>
+
+    <div class="phase" onclick="togglePhase(this)">
+      <div class="phase-header">
+        <div class="phase-status status-next">→</div>
+        <div class="phase-info">
+          <div class="phase-id">PHASE 16</div>
+          <div class="phase-name">Équipements et inventaire matériel</div>
+        </div>
+        <span class="phase-date">À venir</span>
+        <span class="chevron">▼</span>
+      </div>
+    </div>
+
+    <div class="phase" onclick="togglePhase(this)">
+      <div class="phase-header">
+        <div class="phase-status status-next">→</div>
+        <div class="phase-info">
+          <div class="phase-id">PHASE 17</div>
+          <div class="phase-name">Reporting et tableaux de bord avancés</div>
+        </div>
+        <span class="phase-date">À venir</span>
+        <span class="chevron">▼</span>
+      </div>
+    </div>
+
+    <div class="phase" onclick="togglePhase(this)">
+      <div class="phase-header">
+        <div class="phase-status status-wait">⏳</div>
+        <div class="phase-info">
+          <div class="phase-id">PHASE 18</div>
+          <div class="phase-name">Activation HubSpot CRM</div>
+        </div>
+        <span class="phase-date">En attente credentials</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="phase-detail">
+        <div class="phase-desc">
+          <ul>
+            <li>En attente des credentials HubSpot (Private App)</li>
+            <li>Toutes les fonctionnalités testées sur l'adaptateur de développement</li>
+            <li>Leslie doit fournir l'accès</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase" onclick="togglePhase(this)">
+      <div class="phase-header">
+        <div class="phase-status status-next">→</div>
+        <div class="phase-info">
+          <div class="phase-id">PHASE 19</div>
+          <div class="phase-name">Fiche artiste + historique client</div>
+        </div>
+        <span class="phase-date">À venir</span>
+        <span class="chevron">▼</span>
+      </div>
+    </div>
+
+    <div class="phase" onclick="togglePhase(this)">
+      <div class="phase-header">
+        <div class="phase-status status-hold">⏸</div>
+        <div class="phase-info">
+          <div class="phase-id">PHASE 20</div>
+          <div class="phase-name">Portail artiste</div>
+        </div>
+        <span class="phase-date">Reporté — à valider</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="phase-detail">
+        <div class="phase-desc">
+          <ul>
+            <li>Portail en libre-service pour les artistes</li>
+            <li>Reporté — à revalider avec Mahaut et Pierre</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase" onclick="togglePhase(this)">
+      <div class="phase-header">
+        <div class="phase-status status-next">→</div>
+        <div class="phase-info">
+          <div class="phase-id">PHASE 21</div>
+          <div class="phase-name">Import des réservations historiques</div>
+        </div>
+        <span class="phase-date">À venir</span>
+        <span class="chevron">▼</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- POINTS D'ATTENTION -->
+  <div class="section fade-in">
+    <div class="section-title"><span class="section-num">⚠</span> Points d'attention</div>
+
+    <div class="alert">
+      <div class="alert-icon">🔑</div>
+      <div class="alert-content">
+        <div class="alert-title">Credentials HubSpot</div>
+        <div class="alert-text">Leslie doit fournir l'accès à la Private App HubSpot pour la phase 18. Bloquant pour l'intégration CRM.</div>
+      </div>
+    </div>
+
+    <div class="alert">
+      <div class="alert-icon">⏸</div>
+      <div class="alert-content">
+        <div class="alert-title">Portail artiste (Phase 20)</div>
+        <div class="alert-text">Reporté — à revalider avec Mahaut Dufour et Pierre Guimard avant de relancer le développement.</div>
+      </div>
+    </div>
+
+    <div class="alert">
+      <div class="alert-icon">📈</div>
+      <div class="alert-content">
+        <div class="alert-title">Périmètre élargi</div>
+        <div class="alert-text">Le plan passe de 9 à 21 phases suite au RDV du 16 mars 2026. Scope significativement étendu.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-brand">JINXA EURL · Artistic Palace · Studio Planner</span>
+    <span class="footer-brand">Développement Tom Randeau · Mis à jour 20 mars 2026</span>
+  </div>
+
+</div>
+
+<script>
+function togglePhase(el) {
+  el.classList.toggle('open');
+}
+
+// Fade-in on scroll
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
