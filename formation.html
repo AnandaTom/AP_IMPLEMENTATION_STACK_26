@@ -369,7 +369,6 @@
 <body>
 
 <header>
-  <div style="margin-bottom:14px"><img src="https://avatars.githubusercontent.com/u/204782932?s=200&v=4" alt="Jinxa" style="border-radius:12px;" width="72" style="opacity:.5;filter:brightness(1.3)"></div>
   <div class="header-label">Formation CRM — HubSpot Enterprise</div>
   <h1>Plannings de formation<br><span>Studio multi-sites</span></h1>
   <div class="header-meta">
@@ -793,10 +792,89 @@
 
 </div>
 
-<footer>
-  <p>Document confidentiel — Usage interne formation CRM</p>
-  <span class="footer-brand">JINXA × Artistic Palace</span>
-  <p>HubSpot Enterprise · Mars 2026</p>
+<!-- RESSOURCES -->
+<div style="max-width:1100px;margin:0 auto;padding:32px 52px 0;">
+  <div style="border-top:1px solid var(--border);padding-top:32px">
+    <div style="font-size:10px;font-weight:500;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:10px">Ressources</div>
+    <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#fff;margin-bottom:6px">Documents de formation</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:20px">Guides, lexiques et supports à consulter pendant la formation.</p>
+    <div id="docs-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
+    <label for="file-upload" style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border:1px dashed var(--border);border-radius:4px;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--muted);transition:all .2s;background:var(--surface)" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold-light)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+      <span style="font-size:16px">+</span> Déposer un document
+    </label>
+    <input type="file" id="file-upload" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.png,.jpg" style="display:none" onchange="handleFiles(this.files)">
+  </div>
+</div>
+
+<script>
+const docsList = document.getElementById('docs-list');
+const DOCS_KEY = 'formation-docs';
+
+function loadDocs() {
+  try { return JSON.parse(localStorage.getItem(DOCS_KEY)) || []; }
+  catch { return []; }
+}
+
+function saveDocs(docs) {
+  localStorage.setItem(DOCS_KEY, JSON.stringify(docs));
+}
+
+function renderDocs() {
+  const docs = loadDocs();
+  docsList.innerHTML = '';
+  docs.forEach((doc, i) => {
+    const el = document.createElement('div');
+    el.style.cssText = 'display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:4px;';
+    const icon = doc.type.includes('pdf') ? '📄' : doc.type.includes('sheet') || doc.type.includes('csv') || doc.type.includes('excel') ? '📊' : doc.type.includes('presentation') || doc.type.includes('powerpoint') ? '📑' : doc.type.includes('image') ? '🖼' : '📎';
+    el.innerHTML = `
+      <span style="font-size:18px">${icon}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${doc.name}</div>
+        <div style="font-size:10px;color:var(--muted);font-family:monospace">${doc.size} · Ajouté le ${doc.date}</div>
+      </div>
+      ${doc.url ? '<a href="'+doc.url+'" download="'+doc.name+'" style="font-size:11px;color:var(--gold);text-decoration:none;font-family:monospace;white-space:nowrap">Télécharger</a>' : ''}
+      <button onclick="removeDoc(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:4px" title="Supprimer">✕</button>
+    `;
+    docsList.appendChild(el);
+  });
+}
+
+function handleFiles(files) {
+  const docs = loadDocs();
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('fr-FR');
+  Array.from(files).forEach(file => {
+    const size = file.size < 1024 ? file.size + ' o' : file.size < 1048576 ? (file.size/1024).toFixed(1) + ' Ko' : (file.size/1048576).toFixed(1) + ' Mo';
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      docs.push({ name: file.name, type: file.type, size: size, date: dateStr, url: e.target.result });
+      saveDocs(docs);
+      renderDocs();
+    };
+    reader.readAsDataURL(file);
+  });
+  document.getElementById('file-upload').value = '';
+}
+
+function removeDoc(index) {
+  const docs = loadDocs();
+  docs.splice(index, 1);
+  saveDocs(docs);
+  renderDocs();
+}
+
+renderDocs();
+</script>
+
+<footer style="flex-direction:column;align-items:center;gap:14px">
+  <div style="display:flex;align-items:center;gap:14px">
+    <img src="leslie.jpg" alt="Leslie Guilbert" width="42" height="42" style="border-radius:50%;object-fit:cover;">
+    <div>
+      <div style="font-family:'Playfair Display',serif;font-size:13px;color:var(--gold);letter-spacing:1px">JINXA EURL</div>
+      <div style="font-size:11px;color:var(--muted);font-family:'DM Sans',sans-serif">Paris 75018 · 06 02 27 66 27 · hello@jinxa.fr</div>
+    </div>
+  </div>
+  <p>Document confidentiel · HubSpot Enterprise · Mars 2026</p>
 </footer>
 
 <script>
