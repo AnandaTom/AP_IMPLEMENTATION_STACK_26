@@ -176,11 +176,15 @@
 
   /* Bars */
   .bar {
-    height: 22px; border-radius: 4px; position: relative;
-    display: flex; align-items: center; justify-content: center;
+    height: 34px; border-radius: 4px; position: relative;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
     font-size: 9px; font-family: monospace; font-weight: 600;
     letter-spacing: .05em; color: white; text-transform: uppercase;
-    white-space: nowrap; overflow: hidden;
+    white-space: nowrap; overflow: hidden; gap: 0;
+  }
+  .bar small {
+    font-size: 7px; font-weight: 400; opacity: 0.75;
+    letter-spacing: .02em; line-height: 1;
   }
   .bar-direction { background: #ef4444; }
   .bar-commercial { background: #f97316; }
@@ -396,8 +400,8 @@
       <div class="gantt-phase-label">
         <span class="phase-num">P3</span> Cadrage &amp; Priorisation
       </div>
-      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
-      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG<small>Audit</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG<small>Matrice</small></div></div>
       <div class="gantt-cell"></div>
       <div class="gantt-cell"></div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
@@ -408,10 +412,10 @@
       <div class="gantt-phase-label">
         <span class="phase-num">P4</span> Cahier des charges
       </div>
-      <div class="gantt-cell"><div class="bar bar-direction">PG</div></div>
-      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
-      <div class="gantt-cell"><div class="bar bar-commercial">MD</div></div>
-      <div class="gantt-cell"><div class="bar bar-ops">SI</div></div>
+      <div class="gantt-cell"><div class="bar bar-direction">PG<small>Valid.</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG<small>Rédaction</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-commercial">MD<small>Besoins</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-ops">SI<small>Besoins</small></div></div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
@@ -421,12 +425,12 @@
         <span class="phase-num">P5</span> Paramétrage HubSpot CRM
       </div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div>
-      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
-      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
-      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
-      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
-      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
-      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG<small>Contacts</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG<small>Pipeline</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG<small>Deals</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG<small>Booking</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG<small>Reporting</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG<small>KPIs</small></div></div>
       <div class="gantt-cell"></div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
@@ -436,12 +440,12 @@
         <span class="phase-num">P5</span> Planning Opérationnel
       </div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
-      <div class="gantt-cell"><div class="bar bar-tom">TR</div></div>
-      <div class="gantt-cell"><div class="bar bar-tom">TR</div></div>
-      <div class="gantt-cell"><div class="bar bar-tom">TR</div></div>
-      <div class="gantt-cell"><div class="bar bar-tom">TR</div></div>
-      <div class="gantt-cell"><div class="bar bar-ops">SI</div></div>
-      <div class="gantt-cell"><div class="bar bar-ops">SI</div></div>
+      <div class="gantt-cell"><div class="bar bar-tom">TR<small>Dev</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-tom">TR<small>Booking</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-tom">TR<small>Booking</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-tom">TR<small>Tests</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-ops">SI<small>Valid.</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-ops">SI<small>Monitoring</small></div></div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
 
@@ -450,10 +454,10 @@
         <span class="phase-num">P5</span> Workflows &amp; Automatisations
       </div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
-      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
-      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
-      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
-      <div class="gantt-cell"><div class="bar bar-commercial">MD</div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG<small>Emails</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG<small>Relances</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG<small>Alertes</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-commercial">MD<small>Valid.</small></div></div>
       <div class="gantt-cell"></div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
@@ -462,14 +466,14 @@
       <div class="gantt-phase-label">
         <span class="phase-num">P6</span> Migration des données
       </div>
-      <div class="gantt-cell"><div class="bar bar-commercial">MD</div></div>
-      <div class="gantt-cell"><div class="bar bar-commercial">MD</div></div>
-      <div class="gantt-cell"><div class="bar bar-commercial">MD</div></div>
-      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
-      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
-      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
-      <div class="gantt-cell"><div class="bar bar-commercial">MD</div></div>
-      <div class="gantt-cell"><div class="bar bar-ops">SI</div></div>
+      <div class="gantt-cell"><div class="bar bar-commercial">MD<small>Nettoyage</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-commercial">MD<small>Export</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-commercial">MD<small>Données</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG<small>Import</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG<small>Mapping</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG<small>Contrôle</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-commercial">MD<small>Valid.</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-ops">SI<small>Valid.</small></div></div>
       <div class="gantt-cell"></div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
@@ -480,10 +484,10 @@
       </div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
-      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
-      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
-      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
-      <div class="gantt-cell"><div class="bar bar-ops">SI</div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG<small>Email</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG<small>WhatsApp</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG<small>Aircall</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-ops">SI<small>Monitoring</small></div></div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
 
@@ -493,10 +497,10 @@
       </div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
       <div class="gantt-cell"></div>
-      <div class="gantt-cell"><div class="bar bar-ops">SI</div></div>
-      <div class="gantt-cell"><div class="bar bar-ops">SI</div></div>
-      <div class="gantt-cell"><div class="bar bar-ops">SI</div></div>
-      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"><div class="bar bar-ops">SI<small>Audit</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-ops">SI<small>Saisie</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-ops">SI<small>Photos</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG<small>Import</small></div></div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
 
@@ -507,10 +511,10 @@
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
       <div class="gantt-cell"></div>
-      <div class="gantt-cell"><div class="bar bar-commercial">MD</div></div>
-      <div class="gantt-cell"><div class="bar bar-ops">SI</div></div>
-      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
-      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"><div class="bar bar-commercial">MD<small>Booking</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-ops">SI<small>Planning</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG<small>KPIs</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG<small>Correctifs</small></div></div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
 
       <!-- Phase 8 — Formation -->
@@ -520,10 +524,10 @@
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div>
-      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
-      <div class="gantt-cell"><div class="bar bar-commercial">MD</div></div>
-      <div class="gantt-cell"><div class="bar bar-ops">SI</div></div>
-      <div class="gantt-cell"><div class="bar bar-direction">PG</div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG<small>Supports</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-commercial">MD<small>Commercial</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-ops">SI<small>Ops</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-direction">PG<small>KPIs</small></div></div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
 
       <!-- Phase 9 — Déploiement -->
@@ -533,9 +537,9 @@
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
-      <div class="gantt-cell"><div class="bar bar-direction">PG</div></div>
-      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
-      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"><div class="bar bar-direction">PG<small>Go/No-Go</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG<small>Go-Live</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG<small>Support</small></div></div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div>
 
       <!-- Phase 10 — Suivi -->
@@ -546,9 +550,9 @@
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
       <div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div><div class="gantt-cell"></div>
       <div class="gantt-cell"></div>
-      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
-      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
-      <div class="gantt-cell"><div class="bar bar-jinxa">LG</div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG<small>KPIs</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG<small>Monitoring</small></div></div>
+      <div class="gantt-cell"><div class="bar bar-jinxa">LG<small>Optimis.</small></div></div>
     </div>
   </div>
 
