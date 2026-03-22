@@ -568,18 +568,20 @@
         <div class="task-meta">
           <div class="task-id-row">
             <span class="task-id">S3-4</span>
-            <span class="task-title">Intégrer les outils existants (site web, paiement, agenda)</span>
+            <span class="task-title">Intégrer les canaux de réservation (réseaux sociaux, email, Aircall, WhatsApp)</span>
           </div>
           <span class="badge badge-planning">Planning Op — Intégrations</span>
         </div>
         <span class="chevron">▼</span>
       </div>
       <div class="task-detail">
-        <p class="task-desc">Connecter HubSpot aux outils existants du studio : formulaire de réservation du site web, solution de paiement, messagerie (Gmail/Outlook), agenda partagé (Google Calendar). Documenter chaque intégration.</p>
+        <p class="task-desc">Connecter HubSpot aux canaux de réservation actuels du studio : réseaux sociaux (Instagram, Facebook), email (Gmail/Outlook), téléphone (Aircall) et WhatsApp Business. Il n'existe pas de formulaire web aujourd'hui — les réservations arrivent exclusivement par ces canaux. Chaque demande entrante doit créer ou enrichir un contact + deal dans HubSpot.</p>
         <div class="tests-block">
           <div class="tests-label">✓ Tests d'acceptance</div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Formulaire site web → crée un contact + deal dans HubSpot</span></div>
-          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Réservation confirmée → créneau bloqué dans l'agenda partagé</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Demande via Instagram/Facebook → crée un contact + deal dans HubSpot</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Appel entrant Aircall → fiche contact enrichie + activité loguée</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Message WhatsApp → conversation visible dans la boîte de réception HubSpot</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Email de réservation → contact + deal créés automatiquement</span></div>
           <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Documentation des intégrations livrée</span></div>
         </div>
       </div>
