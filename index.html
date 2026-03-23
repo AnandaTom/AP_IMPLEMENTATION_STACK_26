@@ -237,7 +237,7 @@
     <div class="sprint-header">
       <span class="sprint-label" style="color:#f97316">Sprint 1</span>
       <span class="sprint-title">Cadrage &amp; Expression des besoins</span>
-      <span class="sprint-count">4 tâches</span>
+      <span class="sprint-count">5 tâches</span>
     </div>
     <p class="sprint-sub">Phases 3 &amp; 4 — Mars 2026 · Finaliser le cadrage, le cahier des charges et la priorisation</p>
 
@@ -329,6 +329,29 @@
           <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Fichier d'inventaire simplifié envoyé pour les 15 espaces</span></div>
           <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Chaque équipement a un nom, un état et un espace associé</span></div>
           <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Format exploitable pour import dans Studio Planner</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" style="border-left:3px solid #f97316">
+      <div class="task-header" onclick="toggleTask(this)">
+        <button class="task-check" style="border-color:#334155" onclick="toggleDone(event,this,'#f97316')"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="task-meta">
+          <div class="task-id-row">
+            <span class="task-id">S1-5</span>
+            <span class="task-title">Envoyer ~20 fiches contacts enrichies pour démarrer le paramétrage</span>
+          </div>
+          <span class="badge badge-crm">CRM — Migration</span>
+        </div>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-detail">
+        <p class="task-desc">Artistic Palace prépare et envoie une vingtaine de fiches contacts complètement enrichies (nom, entreprise, type de contact, historique, coordonnées). Ces fiches serviront de base pour paramétrer les propriétés HubSpot et tester les workflows sans attendre la migration complète.</p>
+        <div class="tests-block">
+          <div class="tests-label">✓ Tests d'acceptance</div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">~20 fiches contacts enrichies reçues par Jinxa</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Tous les champs clés renseignés (nom, entreprise, type, coordonnées)</span></div>
+          <div class="test-row"><span class="test-arrow">→</span><span class="test-text">Format exploitable pour import direct dans HubSpot</span></div>
         </div>
       </div>
     </div>
